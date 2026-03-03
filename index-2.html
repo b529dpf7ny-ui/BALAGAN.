@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black"/>
+<meta name="apple-mobile-web-app-title" content="Balagan"/>
+<meta name="theme-color" content="#090605"/>
+<title>Balagan · Presenze</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{background:#090605;color:#EEE6DC;font-family:'Century Gothic','Futura','Trebuchet MS',sans-serif;min-height:100vh;}
+button{font-family:inherit;cursor:pointer;}button:active{opacity:.7;}
+input,select,textarea{font-family:inherit;}input::placeholder{color:#3A2015;}
+::-webkit-scrollbar{width:3px;height:3px;}::-webkit-scrollbar-track{background:#120A07;}::-webkit-scrollbar-thumb{background:#32190E;}
+/* SPLASH */
+#splash{position:fixed;inset:0;background:#090605;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;z-index:9999;transition:opacity .3s;}
+#splash.done{opacity:0;pointer-events:none;}
+#splash img{width:56px;animation:pulse 2s ease-in-out infinite;}
+@keyframes pulse{0%,100%{opacity:.3;transform:scale(1);}50%{opacity:.6;transform:scale(1.04);}}
+.sn{font-size:17px;font-weight:300;letter-spacing:8px;color:#6A5040;}.ss{font-size:7px;letter-spacing:5px;color:#3A2015;}
+#app{visibility:hidden;}
+/* HEADER */
+.hdr{background:#120A07;border-bottom:1px solid #32190E;position:sticky;top:0;z-index:50;padding-top:env(safe-area-inset-top);}
+.ht{display:flex;align-items:center;height:52px;padding:0 14px;}
+.logo{display:flex;align-items:center;gap:8px;margin-right:12px;flex-shrink:0;}
+.logo img{width:19px;height:23px;}
+.ln{font-size:16px;font-weight:300;color:#EEE6DC;letter-spacing:6px;}.ls{font-size:6px;font-weight:200;color:#6A5040;letter-spacing:5px;margin-top:2px;}
+nav{display:flex;height:52px;overflow-x:auto;flex:1;}nav::-webkit-scrollbar{display:none;}
+nav button{background:transparent;border:none;border-bottom:1px solid transparent;padding:0 12px;height:52px;font-size:8px;letter-spacing:3px;text-transform:uppercase;font-weight:300;color:#6A5040;white-space:nowrap;}
+nav button.on{color:#EEE6DC;border-bottom-color:#EEE6DC;}
+.xb{background:transparent;border:1px solid #32190E;color:#6A5040;padding:5px 10px;font-size:7px;letter-spacing:2px;text-transform:uppercase;font-weight:200;flex-shrink:0;}
+/* SUBBAR */
+.sub{border-top:1px solid #200F08;padding:8px 14px;}
+.mr{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+.mb{background:transparent;border:1px solid #32190E;color:#6A5040;width:26px;height:26px;font-size:14px;line-height:24px;text-align:center;}
+#mlbl{font-weight:200;font-size:12px;letter-spacing:5px;text-transform:uppercase;flex:1;text-align:center;color:#EEE6DC;}
+.sb{display:flex;align-items:center;border:1px solid #32190E;}
+.sb input{background:transparent;border:none;color:#C4B09A;outline:none;padding:6px 6px 6px 0;font-size:8px;letter-spacing:2px;text-transform:uppercase;width:100%;}
+.si{padding:0 8px;color:#6A5040;font-size:10px;}.sc{background:transparent;border:none;color:#6A5040;padding:0 8px;font-size:14px;}
+.fbar{display:flex;gap:6px;flex-wrap:wrap;padding:6px 0 2px;}
+.fbtn{background:transparent;border:1px solid #32190E;color:#6A5040;padding:3px 10px;font-family:inherit;font-size:7px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;}
+.fbtn.on{color:#EEE6DC;border-color:#EEE6DC;}
+.fbtn.c{border-color:rgba(192,112,96,.4);color:#C07060;}.fbtn.c.on{background:rgba(192,112,96,.15);}
+.fbtn.s{border-color:rgba(96,144,176,.4);color:#6090B0;}.fbtn.s.on{background:rgba(96,144,176,.15);}
+.fbtn.b{border-color:rgba(136,168,96,.4);color:#88A860;}.fbtn.b.on{background:rgba(136,168,96,.15);}
+.fbtn.a{border-color:rgba(144,128,176,.4);color:#9080B0;}.fbtn.a.on{background:rgba(144,128,176,.15);}
+/* VIEWS */
+#vCal{display:block;}
+#vStats,#vAnn,#vTurni,#vFC,#vTeam{display:none;padding:14px;}
+/* CALENDAR */
+.cw{padding:10px 0 10px 10px;}
+.leg{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;padding-right:10px;}
+.li{display:flex;align-items:center;gap:3px;}
+.ld{width:20px;height:17px;border-radius:1px;display:flex;align-items:center;justify-content:center;font-size:7px;}
+.ll{color:#6A5040;font-size:7px;letter-spacing:1.5px;text-transform:uppercase;}
+.ct{border-collapse:collapse;font-size:10px;}
+.thn{padding:5px 10px;background:#120A07;color:#6A5040;text-align:left;font-weight:200;font-size:7px;letter-spacing:2px;text-transform:uppercase;position:sticky;left:0;z-index:2;min-width:145px;border-right:1px solid #200F08;border-bottom:1px solid #32190E;}
+.thd{padding:2px 0;min-width:26px;text-align:center;border-left:1px solid #200F08;border-bottom:1px solid #32190E;}
+.tht{padding:3px 5px;background:#090605;font-size:7px;font-weight:200;letter-spacing:2px;text-transform:uppercase;white-space:nowrap;border-left:1px solid #32190E;border-bottom:1px solid #32190E;}
+.tdn{padding:2px 10px;font-weight:300;font-size:9px;color:#C4B09A;white-space:nowrap;letter-spacing:1px;position:sticky;left:0;border-right:1px solid #200F08;max-width:145px;overflow:hidden;text-overflow:ellipsis;}
+.tdc{padding:1.5px;text-align:center;cursor:pointer;border-left:1px solid #200F08;}
+.tdc:hover{background:rgba(201,138,74,.05);}
+.ci{border-radius:1px;width:22px;height:18px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:300;}
+.tds{padding:2px 6px;font-size:8px;font-weight:200;border-left:1px solid #32190E;}
+/* STATS / ANNUAL */
+.scard{background:#120A07;border:1px solid #32190E;padding:16px;margin-bottom:12px;}
+.slbl{font-weight:200;font-size:7px;color:#6A5040;letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;}
+.ct2{width:100%;border-collapse:collapse;}
+.ct2 th{padding:6px 8px;background:#090605;color:#6A5040;text-align:left;font-weight:200;font-size:7px;letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid #32190E;}
+.ct2 td{padding:7px 8px;font-size:9px;border-bottom:1px solid #200F08;}
+.bc{display:flex;align-items:flex-end;gap:2px;height:110px;padding-bottom:18px;}
+.bw{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;}
+.bar{width:100%;max-width:22px;background:#A86B35;border-radius:1px 1px 0 0;min-height:1px;}
+.bl{font-size:6px;color:#6A5040;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;width:100%;margin-top:2px;}
+.bv{font-size:7px;color:#C98A4A;font-weight:300;}
+.kg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.kc{background:#120A07;border:1px solid #32190E;padding:14px;}
+.kl{font-weight:200;font-size:7px;color:#6A5040;letter-spacing:3px;text-transform:uppercase;margin-bottom:6px;}
+.kv{font-weight:100;font-size:24px;letter-spacing:1px;}
+.at{width:100%;border-collapse:collapse;font-size:9px;}
+.at th{padding:5px 3px;background:#090605;color:#6A5040;text-align:center;font-weight:200;font-size:7px;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid #32190E;}
+.at th:first-child{text-align:left;padding:5px 8px;min-width:130px;}.at th:last-child{color:#C98A4A;border-left:1px solid #32190E;}
+.at td{padding:5px 3px;text-align:center;border-bottom:1px solid #200F08;border-left:1px solid #200F08;}
+.at td:first-child{text-align:left;padding:5px 8px;color:#C4B09A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;}.at td:last-child{border-left:1px solid #32190E;}
+.at .ft{border-top:1px solid #32190E;background:#090605;}.at .ft td{color:#A86B35;}.at .ft td:first-child{color:#6A5040;font-size:7px;letter-spacing:2px;text-transform:uppercase;}.at .ft td:last-child{color:#C98A4A;font-size:13px;}
+/* TURNI */
+.tw{overflow-x:auto;padding-bottom:10px;}
+.tct{border-collapse:collapse;font-size:10px;min-width:100%;}
+.tct th{padding:6px 8px;background:#120A07;color:#6A5040;font-weight:200;font-size:7px;letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid #32190E;white-space:nowrap;}
+.tct th.dh{text-align:center;min-width:90px;border-left:1px solid #200F08;}
+.tct th.dh.we{background:#0E0705;color:#3A2015;}
+.tct th:first-child{text-align:left;position:sticky;left:0;z-index:2;min-width:145px;border-right:1px solid #200F08;}
+.tct td:first-child{position:sticky;left:0;background:#1A0F0A;z-index:1;font-size:9px;color:#C4B09A;padding:4px 10px;border-right:1px solid #200F08;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:145px;}
+.tct tr:nth-child(even) td:first-child{background:#120A07;}
+.tcell{padding:3px;border-left:1px solid #200F08;border-bottom:1px solid #200F08;text-align:center;cursor:pointer;vertical-align:middle;}
+.tcell:hover{background:rgba(201,138,74,.06);}
+.tpill{border-radius:2px;padding:4px 6px;font-size:8px;font-weight:300;letter-spacing:1px;display:inline-block;min-width:76px;text-align:center;}
+/* FOOD COST */
+.fc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;margin-top:14px;}
+.fc-card{background:#120A07;border:1px solid #32190E;padding:14px;cursor:pointer;transition:border-color .15s;}
+.fc-card:hover{border-color:#6A5040;}
+.fc-card-name{font-size:12px;font-weight:300;letter-spacing:2px;color:#EEE6DC;margin-bottom:4px;text-transform:uppercase;}
+.fc-card-cat{font-size:7px;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.fc-meters{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;}
+.fc-meter{background:#090605;padding:8px 6px;text-align:center;}
+.fc-meter-lbl{font-size:6px;letter-spacing:2px;text-transform:uppercase;color:#6A5040;margin-bottom:3px;}
+.fc-meter-val{font-size:13px;font-weight:300;}
+.fc-pct-bar{height:3px;background:#200F08;margin-top:10px;border-radius:2px;}
+.fc-pct-fill{height:100%;border-radius:2px;transition:width .4s;}
+.fc-ing-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #200F08;}
+.fc-ing-name{flex:1;font-size:9px;color:#C4B09A;}
+.fc-ing-detail{font-size:8px;color:#6A5040;white-space:nowrap;}
+.fc-ing-cost{font-size:10px;color:#C98A4A;white-space:nowrap;min-width:48px;text-align:right;}
+.fc-inp{background:#090605;border:1px solid #32190E;color:#EEE6DC;padding:6px 8px;font-family:inherit;font-size:9px;outline:none;width:100%;}
+.fc-inp:focus{border-color:#6A5040;}
+.fc-inp-sm{background:#090605;border:1px solid #32190E;color:#EEE6DC;padding:5px 6px;font-family:inherit;font-size:9px;outline:none;}
+.fc-inp-sm:focus{border-color:#6A5040;}
+.fc-label{font-size:7px;letter-spacing:2px;text-transform:uppercase;color:#6A5040;margin-bottom:5px;margin-top:10px;display:block;}
+.fc-add-btn{background:transparent;border:1px dashed #32190E;color:#6A5040;padding:8px;width:100%;font-size:8px;letter-spacing:3px;text-transform:uppercase;margin-top:8px;}
+.fc-add-btn:hover{border-color:#6A5040;color:#C4B09A;}
+.fc-del{background:transparent;border:none;color:#32190E;font-size:14px;padding:0 4px;flex-shrink:0;}
+.fc-del:hover{color:#9A3520;}
+select.fc-inp-sm{cursor:pointer;}
+/* TEAM */
+.tl{background:#120A07;border:1px solid #32190E;}
+.ti{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #200F08;flex-wrap:wrap;}
+.tav{width:28px;height:28px;background:#090605;border:1px solid #32190E;display:flex;align-items:center;justify-content:center;font-weight:100;font-size:12px;flex-shrink:0;}
+.tnm{font-weight:300;font-size:9px;color:#C4B09A;letter-spacing:1.5px;text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.tsb{font-size:8px;color:#6A5040;margin-top:1px;}
+.trm{background:transparent;border:1px solid #32190E;color:#6A5040;padding:3px 8px;font-size:7px;letter-spacing:2px;text-transform:uppercase;font-weight:200;flex-shrink:0;}
+.tadd{display:flex;gap:8px;padding:12px 14px;background:#090605;border-top:1px solid #32190E;}
+.tadd input{flex:1;background:transparent;border:1px solid #32190E;color:#EEE6DC;padding:8px 10px;font-size:8px;letter-spacing:2px;outline:none;text-transform:uppercase;}
+.tabtn{background:#EEE6DC;color:#090605;border:none;padding:8px 14px;font-size:8px;font-weight:400;letter-spacing:3px;text-transform:uppercase;flex-shrink:0;}
+.sec-hdr{font-size:7px;letter-spacing:3px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #200F08;}
+.sbtn{border:1px solid;padding:3px 8px;font-family:inherit;font-size:7px;letter-spacing:1.5px;text-transform:uppercase;cursor:pointer;background:transparent;}
+.sec-dot{display:inline-block;width:5px;height:5px;border-radius:50%;margin-right:5px;vertical-align:middle;flex-shrink:0;}
+/* MODALS */
+.ov{position:fixed;inset:0;background:rgba(6,3,1,.95);z-index:100;display:flex;align-items:flex-end;justify-content:center;}
+.mo{background:#120A07;border:1px solid #32190E;border-radius:12px 12px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));width:100%;max-width:520px;max-height:90vh;overflow-y:auto;}
+.me{font-weight:200;font-size:7px;color:#6A5040;letter-spacing:3px;text-transform:uppercase;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.md{font-weight:100;font-size:15px;color:#EEE6DC;margin-bottom:14px;letter-spacing:2px;}
+.ms{font-weight:200;font-size:7px;color:#6A5040;letter-spacing:3px;text-transform:uppercase;margin-bottom:8px;}
+.hbs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:12px;}
+.hb{width:38px;height:38px;background:#1A0F0A;border:1px solid #32190E;color:#C4B09A;font-size:17px;font-weight:200;}
+.hba{background:#EEE6DC;border-color:#EEE6DC;color:#090605;font-weight:400;}
+.tg{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:12px;}
+.tb{background:#1A0F0A;border:1px solid #32190E;color:#6A5040;padding:9px 10px;font-size:8px;text-align:left;letter-spacing:1.5px;text-transform:uppercase;font-weight:200;}
+.mf{display:flex;gap:8px;}
+.mc{flex:1;background:transparent;border:1px solid rgba(154,53,32,.4);color:#9A3520;padding:9px;font-size:7px;letter-spacing:3px;text-transform:uppercase;font-weight:200;}
+.mx{flex:1;background:#1A0F0A;border:1px solid #32190E;color:#6A5040;padding:9px;font-size:7px;letter-spacing:3px;text-transform:uppercase;font-weight:200;}
+.hl{height:1px;background:#200F08;margin-bottom:12px;}
+.cfov{position:fixed;inset:0;background:rgba(6,3,1,.96);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;}
+.cfb{background:#120A07;border:1px solid rgba(154,53,32,.5);padding:22px;max-width:300px;width:100%;}
+.toast{position:fixed;bottom:calc(14px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#120A07;border:1px solid #32190E;color:#C4B09A;padding:9px 16px;font-size:8px;letter-spacing:3px;z-index:200;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,.8);}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <img id="simg" alt=""/>
+  <div class="sn">BALAGAN</div>
+  <div class="ss">CARICAMENTO</div>
+</div>
+
+<div id="app">
+  <div class="hdr">
+    <div class="ht">
+      <div class="logo"><img id="lg" alt=""/><div><div class="ln">BALAGAN</div><div class="ls">PRESENZE</div></div></div>
+      <nav>
+        <button class="on" onclick="sv('Cal')">Cal.</button>
+        <button onclick="sv('Stats')">Stat.</button>
+        <button onclick="sv('Ann')">Anno</button>
+        <button onclick="sv('Turni')">Turni</button>
+        <button onclick="sv('FC')">Food Cost</button>
+        <button onclick="sv('Team')">Team</button>
+      </nav>
+      <button class="xb" onclick="expM()">&#8595; XLS</button>
+    </div>
+    <div class="sub" id="sub">
+      <div class="mr">
+        <button class="mb" onclick="pm()">&#8249;</button>
+        <div id="mlbl"></div>
+        <button class="mb" onclick="nm()">&#8250;</button>
+      </div>
+      <div class="sb">
+        <span class="si">&#x2315;</span>
+        <input type="search" id="srch" placeholder="Cerca dipendente..." oninput="rCal()"/>
+        <button class="sc" onclick="document.getElementById('srch').value='';rCal()">&#215;</button>
+      </div>
+      <div class="fbar">
+        <button class="fbtn on" onclick="setSF('t')">Tutti</button>
+        <button class="fbtn c"  onclick="setSF('c')">Cucina</button>
+        <button class="fbtn s"  onclick="setSF('s')">Sala</button>
+        <button class="fbtn b"  onclick="setSF('b')">Bar</button>
+        <button class="fbtn a"  onclick="setSF('a')">Altro</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="vCal"><div class="cw"><div class="leg" id="leg"></div>
+    <div style="overflow-x:auto;padding-right:10px;"><table class="ct" id="ct"></table></div>
+  </div></div>
+  <div id="vStats"></div>
+  <div id="vAnn"></div>
+  <div id="vTurni"></div>
+  <div id="vFC"></div>
+  <div id="vTeam"></div>
+</div>
+
+<!-- PRESENZE MODAL -->
+<div class="ov" id="cmod" style="display:none" onclick="cMo()">
+  <div class="mo" onclick="event.stopPropagation()">
+    <div class="me" id="memp"></div><div class="hl"></div>
+    <div class="md" id="mdat"></div>
+    <div class="ms">Ore lavorate</div><div class="hbs" id="hbs"></div>
+    <div class="ms">Tipo giornata</div><div class="tg" id="tgr"></div>
+    <div class="hl"></div>
+    <div class="mf">
+      <button class="mc" onclick="clC()">&#10005; Cancella</button>
+      <button class="mx" onclick="cMo()">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<!-- TURNI MODAL -->
+<div class="ov" id="tmod" style="display:none" onclick="cTMo()">
+  <div class="mo" onclick="event.stopPropagation()">
+    <div class="me" id="tmemp"></div><div class="hl"></div>
+    <div class="md" id="tmdat"></div>
+    <div class="ms">Turno assegnato</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:14px;" id="tshift-btns"></div>
+    <div class="ms">Orario personalizzato</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <input type="text" id="tcustom" placeholder="es. 10:00-16:00"
+        style="flex:1;background:#1A0F0A;border:1px solid #32190E;color:#EEE6DC;padding:8px 10px;font-size:11px;outline:none;letter-spacing:1px;"
+        onkeydown="if(event.key==='Enter')setTurno(this.value)"/>
+      <button onclick="setTurno(document.getElementById('tcustom').value)"
+        style="background:#C98A4A;color:#0C0A08;border:none;padding:8px 14px;font-size:8px;letter-spacing:2px;text-transform:uppercase;">OK</button>
+    </div>
+    <div class="hl"></div>
+    <div class="mf">
+      <button class="mc" onclick="clTurno()">&#10005; Cancella turno</button>
+      <button class="mx" onclick="cTMo()">Chiudi</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOD COST MODAL -->
+<div class="ov" id="fcmod" style="display:none" onclick="cFCMo(event)">
+  <div class="mo" onclick="event.stopPropagation()">
+    <div class="me">FOOD COST</div><div class="hl"></div>
+    <div id="fcmod-body"></div>
+  </div>
+</div>
+
+<!-- CONFIRM REMOVE -->
+<div class="cfov" id="cfmod" style="display:none" onclick="cCf()">
+  <div class="cfb" onclick="event.stopPropagation()">
+    <div style="color:#9A3520;font-weight:200;font-size:7px;margin-bottom:10px;letter-spacing:3px;text-transform:uppercase;">Conferma Rimozione</div>
+    <div id="cfnm" style="color:#EEE6DC;font-size:12px;margin-bottom:8px;letter-spacing:1.5px;text-transform:uppercase;font-weight:200;"></div>
+    <div style="color:#6A5040;font-size:11px;margin-bottom:20px;line-height:1.6;">I dati verranno eliminati definitivamente.</div>
+    <div style="display:flex;gap:8px;">
+      <button onclick="doRm()" style="flex:1;background:#9A3520;border:none;color:#F0E8E6;padding:10px;font-family:inherit;font-size:7px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;">Rimuovi</button>
+      <button onclick="cCf()" style="flex:1;background:#1A0F0A;border:1px solid #32190E;color:#6A5040;padding:10px;font-family:inherit;font-size:7px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;">Annulla</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="tst" style="display:none"></div>
+
+<script>
+var EMPS  = ["DI STEFEANO FABRIZIO","BERNABEI DENNIS","MAURIZI DANIELE","RICCI LORENZO","BENVENUTO FRANCESCO","DE MEDIO LEONARDO","ERCOLI LUCA ANDREA","FOTIA  ELENA","HASAN MD SAIFUL","HOSSAIN SHAKIB","HOSSAIN MOHAMED ABUL","HOSSIN MD ZAKIR","ISLAM TARIKUL","LILLO GIANLUCA","MIA MOHAMMAD SUEL","SAHIR ABDUL","SALAZAR VEGA JANNIER","SHAIK JUWEL","UDDIN MONIR","VILLA LORENZO"];
+var CDATA = {"2025-7-0-1":"1","2025-7-0-2":"1","2025-7-0-3":"1","2025-7-0-4":"R","2025-7-0-5":"R","2025-7-0-6":"1","2025-7-0-7":"1","2025-7-0-8":"1","2025-7-0-9":"1","2025-7-0-10":"1","2025-7-0-11":"R","2025-7-0-12":"R","2025-7-0-13":"1","2025-7-0-14":"6","2025-7-0-15":"1","2025-7-0-16":"6","2025-7-0-17":"1","2025-7-0-18":"R","2025-7-0-19":"R","2025-7-0-20":"1","2025-7-0-21":"1","2025-7-0-22":"6","2025-7-0-23":"6","2025-7-0-24":"F","2025-7-0-25":"R","2025-7-0-26":"R","2025-7-0-27":"1","2025-7-0-28":"6","2025-7-0-29":"6","2025-7-0-30":"1","2025-7-0-31":"1","2025-7-1-1":"1","2025-7-1-2":"1","2025-7-1-3":"1","2025-7-1-4":"R","2025-7-1-5":"R","2025-7-1-6":"1","2025-7-1-7":"1","2025-7-1-8":"1","2025-7-1-9":"1","2025-7-1-10":"F","2025-7-1-11":"R","2025-7-1-12":"R","2025-7-1-13":"F","2025-7-1-14":"F","2025-7-1-15":"F","2025-7-1-16":"F","2025-7-1-17":"F","2025-7-1-18":"R","2025-7-1-19":"R","2025-7-1-20":"1","2025-7-1-21":"1","2025-7-1-22":"7","2025-7-1-23":"7","2025-7-1-24":"6","2025-7-1-25":"R","2025-7-1-26":"R","2025-7-1-27":"1","2025-7-1-28":"6","2025-7-1-29":"6","2025-7-1-30":"6","2025-7-1-31":"6","2025-7-2-1":"1","2025-7-2-2":"1","2025-7-2-3":"1","2025-7-2-4":"R","2025-7-2-5":"R","2025-7-2-6":"1","2025-7-2-7":"1","2025-7-2-8":"1","2025-7-2-9":"1","2025-7-2-10":"1","2025-7-2-11":"R","2025-7-2-12":"R","2025-7-2-13":"1","2025-7-2-14":"1","2025-7-2-15":"7","2025-7-2-16":"1","2025-7-2-17":"F","2025-7-2-18":"R","2025-7-2-19":"R","2025-7-2-20":"1","2025-7-2-21":"1","2025-7-2-22":"1","2025-7-2-23":"1","2025-7-2-24":"1","2025-7-2-25":"R","2025-7-2-26":"R","2025-7-2-27":"1","2025-7-2-28":"1","2025-7-2-29":"1","2025-7-2-30":"1","2025-7-2-31":"F","2025-7-3-1":"1","2025-7-3-2":"1","2025-7-3-3":"1","2025-7-3-4":"R","2025-7-3-5":"R","2025-7-3-6":"1","2025-7-3-7":"1","2025-7-3-8":"1","2025-7-3-9":"1","2025-7-3-10":"1","2025-7-3-11":"R","2025-7-3-12":"R","2025-7-3-13":"1","2025-7-3-14":"1","2025-7-3-15":"1","2025-7-3-16":"1","2025-7-3-17":"1","2025-7-3-18":"R","2025-7-3-19":"R","2025-7-3-20":"1","2025-7-3-21":"1","2025-7-3-22":"1","2025-7-3-23":"1","2025-7-3-24":"F","2025-7-3-25":"R","2025-7-3-26":"R","2025-7-3-27":"1","2025-7-3-28":"1","2025-7-3-29":"F","2025-7-3-30":"1","2025-7-3-31":"1","2025-7-4-1":"1","2025-7-4-2":"1","2025-7-4-3":"1","2025-7-4-4":"R","2025-7-4-5":"R","2025-7-4-6":"1","2025-7-4-7":"1","2025-7-4-8":"1","2025-7-4-9":"1","2025-7-4-10":"1","2025-7-4-11":"R","2025-7-4-12":"R","2025-7-4-13":"1","2025-7-4-14":"1","2025-7-4-15":"F","2025-7-4-16":"F","2025-7-4-17":"1","2025-7-4-18":"R","2025-7-4-19":"R","2025-7-4-20":"1","2025-7-4-21":"1","2025-7-4-22":"1","2025-7-4-23":"1","2025-7-4-24":"1","2025-7-4-25":"R","2025-7-4-26":"R","2025-7-4-27":"1","2025-7-4-28":"1","2025-7-4-29":"1","2025-7-4-30":"1","2025-7-4-31":"1","2025-7-5-1":"1","2025-7-5-2":"1","2025-7-5-3":"1","2025-7-5-4":"R","2025-7-5-5":"R","2025-7-5-6":"1","2025-7-5-7":"1","2025-7-5-8":"1","2025-7-5-9":"1","2025-7-5-10":"1","2025-7-5-11":"R","2025-7-5-12":"R","2025-7-5-13":"1","2025-7-5-14":"1","2025-7-5-15":"1","2025-7-5-16":"1","2025-7-5-17":"1","2025-7-5-18":"R","2025-7-5-19":"R","2025-7-5-20":"F","2025-7-5-21":"1","2025-7-5-22":"1","2025-7-5-23":"1","2025-7-5-24":"1","2025-7-5-25":"R","2025-7-5-26":"R","2025-7-5-27":"1","2025-7-5-28":"1","2025-7-5-29":"1","2025-7-5-30":"1","2025-7-5-31":"1","2025-7-6-1":"1","2025-7-6-2":"1","2025-7-6-3":"R","2025-7-6-4":"R","2025-7-6-5":"R","2025-7-6-6":"1","2025-7-6-7":"1","2025-7-6-8":"1","2025-7-6-9":"1","2025-7-6-10":"R","2025-7-6-11":"R","2025-7-6-12":"1","2025-7-6-13":"1","2025-7-6-14":"1","2025-7-6-15":"1","2025-7-6-16":"1","2025-7-6-17":"R","2025-7-6-18":"R","2025-7-6-19":"1","2025-7-6-20":"1","2025-7-6-21":"1","2025-7-6-22":"1","2025-7-6-23":"F","2025-7-6-24":"R","2025-7-6-25":"R","2025-7-6-26":"1","2025-7-6-27":"1","2025-7-6-28":"1","2025-7-6-29":"1","2025-7-6-30":"1","2025-7-6-31":"R","2025-7-7-1":"1","2025-7-7-2":"1","2025-7-7-3":"1","2025-7-7-4":"R","2025-7-7-5":"R","2025-7-7-6":"1","2025-7-7-7":"1","2025-7-7-8":"1","2025-7-7-9":"1","2025-7-7-10":"1","2025-7-7-11":"R","2025-7-7-12":"R","2025-7-7-13":"5","2025-7-7-14":"F","2025-7-7-15":"F","2025-7-7-16":"F","2025-7-7-17":"1","2025-7-7-18":"R","2025-7-7-19":"R","2025-7-7-20":"1","2025-7-7-21":"F","2025-7-7-22":"1","2025-7-7-23":"1","2025-7-7-24":"1","2025-7-7-25":"R","2025-7-7-26":"R","2025-7-7-27":"M","2025-7-7-28":"M","2025-7-7-29":"M","2025-7-7-30":"M","2025-7-7-31":"1","2025-7-8-1":"1","2025-7-8-2":"1","2025-7-8-3":"1","2025-7-8-4":"R","2025-7-8-5":"R","2025-7-8-6":"1","2025-7-8-7":"1","2025-7-8-8":"1","2025-7-8-9":"1","2025-7-8-10":"1","2025-7-8-11":"R","2025-7-8-12":"R","2025-7-8-13":"1","2025-7-8-14":"1","2025-7-8-15":"1","2025-7-8-16":"1","2025-7-8-17":"F","2025-7-8-18":"R","2025-7-8-19":"R","2025-7-8-20":"1","2025-7-8-21":"1","2025-7-8-22":"1","2025-7-8-23":"1","2025-7-8-24":"F","2025-7-8-25":"R","2025-7-8-26":"R","2025-7-8-27":"1","2025-7-8-28":"1","2025-7-8-29":"1","2025-7-8-30":"1","2025-7-8-31":"1","2025-7-9-1":"1","2025-7-9-2":"1","2025-7-9-3":"1","2025-7-9-4":"R","2025-7-9-5":"R","2025-7-9-6":"1","2025-7-9-7":"1","2025-7-9-8":"1","2025-7-9-9":"1","2025-7-9-10":"1","2025-7-9-11":"R","2025-7-9-12":"R","2025-7-9-13":"1","2025-7-9-14":"1","2025-7-9-15":"F","2025-7-9-16":"F","2025-7-9-17":"1","2025-7-9-18":"R","2025-7-9-19":"R","2025-7-9-20":"1","2025-7-9-21":"1","2025-7-9-22":"F","2025-7-9-23":"F","2025-7-9-24":"1","2025-7-9-25":"R","2025-7-9-26":"R","2025-7-9-27":"1","2025-7-9-28":"1","2025-7-9-29":"1","2025-7-9-30":"1","2025-7-9-31":"1","2025-7-10-1":"M","2025-7-10-2":"M","2025-7-10-3":"M","2025-7-10-4":"R","2025-7-10-5":"R","2025-7-10-6":"M","2025-7-10-7":"M","2025-7-10-8":"M","2025-7-10-9":"M","2025-7-10-10":"M","2025-7-10-11":"R","2025-7-10-12":"R","2025-7-10-13":"M","2025-7-10-14":"M","2025-7-10-15":"M","2025-7-10-16":"M","2025-7-10-17":"M","2025-7-10-18":"R","2025-7-10-19":"R","2025-7-10-20":"M","2025-7-10-21":"M","2025-7-10-22":"M","2025-7-10-23":"M","2025-7-10-24":"M","2025-7-10-25":"R","2025-7-10-26":"R","2025-7-10-27":"M","2025-7-10-28":"M","2025-7-10-29":"M","2025-7-10-30":"M","2025-7-10-31":"M","2025-7-11-1":"1","2025-7-11-2":"1","2025-7-11-3":"1","2025-7-11-4":"R","2025-7-11-5":"R","2025-7-11-6":"1","2025-7-11-7":"1","2025-7-11-8":"1","2025-7-11-9":"1","2025-7-11-10":"1","2025-7-11-11":"R","2025-7-11-12":"R","2025-7-11-13":"1","2025-7-11-14":"1","2025-7-11-15":"1","2025-7-11-16":"1","2025-7-11-17":"1","2025-7-11-18":"R","2025-7-11-19":"R","2025-7-11-20":"1","2025-7-11-21":"1","2025-7-11-22":"1","2025-7-11-23":"1","2025-7-11-24":"1","2025-7-11-25":"R","2025-7-11-26":"R","2025-7-11-27":"1","2025-7-11-28":"1","2025-7-11-29":"1","2025-7-11-30":"1","2025-7-11-31":"1","2025-7-12-1":"1","2025-7-12-2":"1","2025-7-12-3":"1","2025-7-12-4":"R","2025-7-12-5":"R","2025-7-12-6":"1","2025-7-12-7":"1","2025-7-12-8":"1","2025-7-12-9":"1","2025-7-12-10":"1","2025-7-12-11":"R","2025-7-12-12":"R","2025-7-12-13":"1","2025-7-12-14":"1","2025-7-12-15":"1","2025-7-12-16":"1","2025-7-12-17":"1","2025-7-12-18":"R","2025-7-12-19":"R","2025-7-12-20":"1","2025-7-12-21":"1","2025-7-12-22":"1","2025-7-12-23":"1","2025-7-12-24":"1","2025-7-12-25":"R","2025-7-12-26":"R","2025-7-12-27":"1","2025-7-12-28":"1","2025-7-12-29":"1","2025-7-12-30":"M","2025-7-12-31":"M","2025-7-13-1":"1","2025-7-13-2":"1","2025-7-13-3":"1","2025-7-13-4":"R","2025-7-13-5":"R","2025-7-13-6":"1","2025-7-13-7":"1","2025-7-13-8":"1","2025-7-13-9":"1","2025-7-13-10":"1","2025-7-13-11":"R","2025-7-13-12":"R","2025-7-13-13":"1","2025-7-13-14":"1","2025-7-13-15":"1","2025-7-13-16":"1","2025-7-13-17":"1","2025-7-13-18":"R","2025-7-13-19":"R","2025-7-13-20":"1","2025-7-13-21":"1","2025-7-13-22":"F","2025-7-13-23":"F","2025-7-13-24":"1","2025-7-13-25":"R","2025-7-13-26":"R","2025-7-13-27":"1","2025-7-13-28":"1","2025-7-13-29":"1","2025-7-13-30":"1","2025-7-13-31":"1","2025-7-14-1":"1","2025-7-14-2":"1","2025-7-14-3":"1","2025-7-14-4":"R","2025-7-14-5":"R","2025-7-14-6":"1","2025-7-14-7":"1","2025-7-14-8":"1","2025-7-14-9":"1","2025-7-14-10":"1","2025-7-14-11":"R","2025-7-14-12":"R","2025-7-14-13":"1","2025-7-14-14":"1","2025-7-14-15":"F","2025-7-14-16":"F","2025-7-14-17":"F","2025-7-14-18":"R","2025-7-14-19":"R","2025-7-14-20":"6","2025-7-14-21":"1","2025-7-14-22":"6","2025-7-14-23":"6","2025-7-14-24":"6","2025-7-14-25":"R","2025-7-14-26":"R","2025-7-14-27":"6","2025-7-14-28":"6","2025-7-14-29":"6","2025-7-14-30":"1","2025-7-14-31":"6","2025-7-15-1":"1","2025-7-15-2":"1","2025-7-15-3":"1","2025-7-15-4":"R","2025-7-15-5":"R","2025-7-15-6":"1","2025-7-15-7":"1","2025-7-15-8":"1","2025-7-15-9":"1","2025-7-15-10":"1","2025-7-15-11":"R","2025-7-15-12":"R","2025-7-15-13":"1","2025-7-15-14":"1","2025-7-15-15":"F","2025-7-15-16":"F","2025-7-15-17":"F","2025-7-15-18":"R","2025-7-15-19":"R","2025-7-15-20":"1","2025-7-15-21":"1","2025-7-15-22":"F","2025-7-15-23":"6","2025-7-15-24":"1","2025-7-15-25":"R","2025-7-15-26":"R","2025-7-15-27":"F","2025-7-15-28":"1","2025-7-15-29":"M","2025-7-15-30":"M","2025-7-15-31":"M","2025-7-16-1":"M","2025-7-16-2":"M","2025-7-16-3":"M","2025-7-16-4":"R","2025-7-16-5":"R","2025-7-16-6":"1","2025-7-16-7":"1","2025-7-16-8":"1","2025-7-16-9":"1","2025-7-16-10":"1","2025-7-16-11":"R","2025-7-16-12":"R","2025-7-16-13":"1","2025-7-16-14":"1","2025-7-16-15":"1","2025-7-16-16":"1","2025-7-16-17":"F","2025-7-16-18":"R","2025-7-16-19":"R","2025-7-16-20":"1","2025-7-16-21":"1","2025-7-16-22":"F","2025-7-16-23":"F","2025-7-16-24":"F","2025-7-16-25":"R","2025-7-16-26":"R","2025-7-16-27":"1","2025-7-16-28":"1","2025-7-16-29":"1","2025-7-16-30":"1","2025-7-16-31":"1","2025-7-17-1":"1","2025-7-17-2":"1","2025-7-17-3":"1","2025-7-17-4":"R","2025-7-17-5":"R","2025-7-17-6":"1","2025-7-17-7":"1","2025-7-17-8":"1","2025-7-17-9":"1","2025-7-17-10":"1","2025-7-17-11":"R","2025-7-17-12":"R","2025-7-17-13":"1","2025-7-17-14":"1","2025-7-17-15":"F","2025-7-17-16":"F","2025-7-17-17":"F","2025-7-17-18":"R","2025-7-17-19":"R","2025-7-17-20":"1","2025-7-17-21":"1","2025-7-17-22":"6","2025-7-17-23":"F","2025-7-17-24":"6","2025-7-17-25":"R","2025-7-17-26":"R","2025-7-17-27":"1","2025-7-17-28":"F","2025-7-17-29":"6","2025-7-17-30":"1","2025-7-17-31":"1","2025-7-18-1":"1","2025-7-18-2":"1","2025-7-18-3":"1","2025-7-18-4":"R","2025-7-18-5":"R","2025-7-18-6":"1","2025-7-18-7":"1","2025-7-18-8":"1","2025-7-18-9":"1","2025-7-18-10":"1","2025-7-18-11":"R","2025-7-18-12":"R","2025-7-18-13":"1","2025-7-18-14":"1","2025-7-18-15":"F","2025-7-18-16":"F","2025-7-18-17":"F","2025-7-18-18":"R","2025-7-18-19":"R","2025-7-18-20":"6","2025-7-18-21":"1","2025-7-18-22":"6","2025-7-18-23":"6","2025-7-18-24":"F","2025-7-18-25":"R","2025-7-18-26":"R","2025-7-18-27":"6","2025-7-18-28":"6","2025-7-18-29":"6","2025-7-18-30":"1","2025-7-18-31":"6","2025-7-19-1":"1","2025-7-19-2":"1","2025-7-19-3":"1","2025-7-19-4":"R","2025-7-19-5":"R","2025-7-19-6":"1","2025-7-19-7":"1","2025-7-19-8":"1","2025-7-19-9":"1","2025-7-19-10":"1","2025-7-19-11":"R","2025-7-19-12":"R","2025-7-19-13":"1","2025-7-19-14":"1","2025-7-19-15":"F","2025-7-19-16":"F","2025-7-19-17":"F","2025-7-19-18":"R","2025-7-19-19":"R","2025-7-19-20":"1","2025-7-19-21":"1","2025-7-19-22":"1","2025-7-19-23":"1","2025-7-19-24":"1","2025-7-19-25":"R","2025-7-19-26":"R","2025-7-19-27":"1","2025-7-19-28":"1","2025-7-19-29":"1","2025-7-19-30":"1","2025-7-19-31":"1","2025-8-0-1":"R","2025-8-0-2":"R","2025-8-0-3":"1","2025-8-0-4":"1","2025-8-0-5":"1","2025-8-0-6":"1","2025-8-0-7":"1","2025-8-0-8":"R","2025-8-0-9":"R","2025-8-0-10":"1","2025-8-0-11":"1","2025-8-0-12":"5","2025-8-0-13":"1","2025-8-0-14":"6","2025-8-0-15":"R","2025-8-0-16":"R","2025-8-0-17":"1","2025-8-0-18":"1","2025-8-0-19":"1","2025-8-0-20":"1","2025-8-0-21":"1","2025-8-0-22":"R","2025-8-0-23":"R","2025-8-0-24":"1","2025-8-0-25":"1","2025-8-0-26":"1","2025-8-0-27":"1","2025-8-0-28":"F","2025-8-0-29":"R","2025-8-0-30":"R","2025-8-1-1":"R","2025-8-1-2":"R","2025-8-1-3":"1","2025-8-1-4":"F","2025-8-1-5":"1","2025-8-1-6":"1","2025-8-1-7":"1","2025-8-1-8":"R","2025-8-1-9":"R","2025-8-1-10":"R","2025-8-1-11":"1","2025-8-1-12":"1","2025-8-1-13":"F","2025-8-1-14":"F","2025-8-1-15":"R","2025-8-1-16":"R","2025-8-1-17":"1","2025-8-1-18":"1","2025-8-1-19":"1","2025-8-1-20":"1","2025-8-1-21":"1","2025-8-1-22":"R","2025-8-1-23":"R","2025-8-1-24":"1","2025-8-1-25":"1","2025-8-1-26":"1","2025-8-1-27":"1","2025-8-1-28":"1","2025-8-1-29":"R","2025-8-1-30":"R","2025-8-2-1":"R","2025-8-2-2":"R","2025-8-2-3":"1","2025-8-2-4":"1","2025-8-2-5":"1","2025-8-2-6":"1","2025-8-2-7":"1","2025-8-2-8":"R","2025-8-2-9":"R","2025-8-2-10":"1","2025-8-2-11":"1","2025-8-2-12":"1","2025-8-2-13":"1","2025-8-2-14":"1","2025-8-2-15":"R","2025-8-2-16":"R","2025-8-2-17":"1","2025-8-2-18":"1","2025-8-2-19":"1","2025-8-2-20":"1","2025-8-2-21":"1","2025-8-2-22":"R","2025-8-2-23":"R","2025-8-2-24":"F","2025-8-2-25":"1","2025-8-2-26":"1","2025-8-2-27":"1","2025-8-2-28":"F","2025-8-2-29":"R","2025-8-2-30":"R","2025-8-3-1":"R","2025-8-3-2":"R","2025-8-3-3":"1","2025-8-3-4":"1","2025-8-3-5":"1","2025-8-3-6":"1","2025-8-3-7":"1","2025-8-3-8":"R","2025-8-3-9":"R","2025-8-3-10":"1","2025-8-3-11":"1","2025-8-3-12":"1","2025-8-3-13":"1","2025-8-3-14":"6","2025-8-3-15":"R","2025-8-3-16":"R","2025-8-3-17":"1","2025-8-3-18":"1","2025-8-3-19":"1","2025-8-3-20":"1","2025-8-3-21":"1","2025-8-3-22":"R","2025-8-3-23":"R","2025-8-3-24":"1","2025-8-3-25":"1","2025-8-3-26":"1","2025-8-3-27":"1","2025-8-3-28":"F","2025-8-3-29":"R","2025-8-3-30":"R","2025-8-4-1":"R","2025-8-4-2":"R","2025-8-4-3":"1","2025-8-4-4":"1","2025-8-4-5":"1","2025-8-4-6":"1","2025-8-4-7":"1","2025-8-4-8":"R","2025-8-4-9":"R","2025-8-4-10":"1","2025-8-4-11":"1","2025-8-4-12":"1","2025-8-4-13":"1","2025-8-4-14":"1","2025-8-4-15":"R","2025-8-4-16":"R","2025-8-4-17":"1","2025-8-4-18":"1","2025-8-4-19":"1","2025-8-4-20":"1","2025-8-4-21":"1","2025-8-4-22":"R","2025-8-4-23":"R","2025-8-4-24":"1","2025-8-4-25":"1","2025-8-4-26":"1","2025-8-4-27":"1","2025-8-4-28":"1","2025-8-4-29":"R","2025-8-4-30":"R","2025-8-5-1":"R","2025-8-5-2":"R","2025-8-5-3":"1","2025-8-5-4":"1","2025-8-5-5":"1","2025-8-5-6":"1","2025-8-5-7":"1","2025-8-5-8":"R","2025-8-5-9":"R","2025-8-5-10":"1","2025-8-5-11":"1","2025-8-5-12":"1","2025-8-5-13":"1","2025-8-5-14":"1","2025-8-5-15":"R","2025-8-5-16":"R","2025-8-5-17":"1","2025-8-5-18":"1","2025-8-5-19":"1","2025-8-5-20":"1","2025-8-5-21":"1","2025-8-5-22":"R","2025-8-5-23":"R","2025-8-5-24":"1","2025-8-5-25":"1","2025-8-5-26":"1","2025-8-5-27":"1","2025-8-5-28":"R","2025-8-5-29":"R","2025-8-5-30":"R","2025-8-6-1":"R","2025-8-6-2":"1","2025-8-6-3":"1","2025-8-6-4":"1","2025-8-6-5":"1","2025-8-6-6":"1","2025-8-6-7":"R","2025-8-6-8":"R","2025-8-6-9":"R","2025-8-6-10":"F","2025-8-6-11":"1","2025-8-6-12":"1","2025-8-6-13":"1","2025-8-6-14":"1","2025-8-6-15":"R","2025-8-6-16":"1","2025-8-6-17":"1","2025-8-6-18":"1","2025-8-6-19":"1","2025-8-6-20":"1","2025-8-6-21":"R","2025-8-6-22":"R","2025-8-6-23":"R","2025-8-6-24":"1","2025-8-6-25":"1","2025-8-6-26":"1","2025-8-6-27":"1","2025-8-6-28":"1","2025-8-6-29":"R","2025-8-6-30":"R","2025-8-7-1":"R","2025-8-7-2":"R","2025-8-7-3":"1","2025-8-7-4":"1","2025-8-7-5":"1","2025-8-7-6":"1","2025-8-7-7":"1","2025-8-7-8":"R","2025-8-7-9":"R","2025-8-7-10":"1","2025-8-7-11":"1","2025-8-7-12":"1","2025-8-7-13":"1","2025-8-7-14":"1","2025-8-7-15":"R","2025-8-7-16":"R","2025-8-7-17":"1","2025-8-7-18":"1","2025-8-7-19":"1","2025-8-7-20":"1","2025-8-7-21":"1","2025-8-7-22":"R","2025-8-7-23":"R","2025-8-7-24":"1","2025-8-7-25":"1","2025-8-7-26":"1","2025-8-7-27":"1","2025-8-7-28":"1","2025-8-7-29":"R","2025-8-7-30":"R","2025-8-8-1":"R","2025-8-8-2":"R","2025-8-8-3":"1","2025-8-8-4":"1","2025-8-8-5":"1","2025-8-8-6":"1","2025-8-8-7":"1","2025-8-8-8":"R","2025-8-8-9":"R","2025-8-8-10":"1","2025-8-8-11":"1","2025-8-8-12":"1","2025-8-8-13":"1","2025-8-8-14":"1","2025-8-8-15":"R","2025-8-8-16":"R","2025-8-8-17":"1","2025-8-8-18":"1","2025-8-8-19":"1","2025-8-8-20":"1","2025-8-8-21":"1","2025-8-8-22":"R","2025-8-8-23":"R","2025-8-8-24":"1","2025-8-8-25":"1","2025-8-8-26":"1","2025-8-8-27":"1","2025-8-8-28":"1","2025-8-8-29":"R","2025-8-8-30":"R","2025-8-9-1":"R","2025-8-9-2":"R","2025-8-9-3":"1","2025-8-9-4":"1","2025-8-9-5":"1","2025-8-9-6":"1","2025-8-9-7":"1","2025-8-9-8":"R","2025-8-9-9":"R","2025-8-9-10":"1","2025-8-9-11":"1","2025-8-9-12":"1","2025-8-9-13":"1","2025-8-9-14":"1","2025-8-9-15":"R","2025-8-9-16":"R","2025-8-9-17":"1","2025-8-9-18":"1","2025-8-9-19":"1","2025-8-9-20":"1","2025-8-9-21":"1","2025-8-9-22":"R","2025-8-9-23":"R","2025-8-9-24":"1","2025-8-9-25":"1","2025-8-9-26":"1","2025-8-9-27":"1","2025-8-9-28":"1","2025-8-9-29":"R","2025-8-9-30":"R","2025-8-10-1":"R","2025-8-10-2":"R","2025-8-10-3":"M","2025-8-10-4":"M","2025-8-10-5":"M","2025-8-10-6":"M","2025-8-10-7":"M","2025-8-10-8":"M","2025-8-10-9":"M","2025-8-10-10":"M","2025-8-10-11":"M","2025-8-10-12":"M","2025-8-10-13":"M","2025-8-10-14":"M","2025-8-10-15":"R","2025-8-10-16":"M","2025-8-10-17":"M","2025-8-10-18":"M","2025-8-10-19":"M","2025-8-10-20":"M","2025-8-10-21":"M","2025-8-10-22":"M","2025-8-10-23":"M","2025-8-10-24":"M","2025-8-10-25":"M","2025-8-10-26":"M","2025-8-10-27":"M","2025-8-10-28":"M","2025-8-10-29":"M","2025-8-10-30":"M","2025-8-11-1":"R","2025-8-11-2":"R","2025-8-11-3":"1","2025-8-11-4":"1","2025-8-11-5":"1","2025-8-11-6":"1","2025-8-11-7":"1","2025-8-11-8":"R","2025-8-11-9":"R","2025-8-11-10":"1","2025-8-11-11":"1","2025-8-11-12":"1","2025-8-11-13":"1","2025-8-11-14":"1","2025-8-11-15":"R","2025-8-11-16":"R","2025-8-11-17":"1","2025-8-11-18":"1","2025-8-11-19":"1","2025-8-11-20":"1","2025-8-11-21":"1","2025-8-11-22":"R","2025-8-11-23":"R","2025-8-11-24":"1","2025-8-11-25":"1","2025-8-11-26":"1","2025-8-11-27":"1","2025-8-11-28":"1","2025-8-11-29":"R","2025-8-11-30":"R","2025-8-12-1":"R","2025-8-12-2":"R","2025-8-12-3":"1","2025-8-12-4":"1","2025-8-12-5":"1","2025-8-12-6":"1","2025-8-12-7":"1","2025-8-12-8":"R","2025-8-12-9":"R","2025-8-12-10":"1","2025-8-12-11":"1","2025-8-12-12":"1","2025-8-12-13":"1","2025-8-12-14":"1","2025-8-12-15":"R","2025-8-12-16":"R","2025-8-12-17":"1","2025-8-12-18":"1","2025-8-12-19":"1","2025-8-12-20":"1","2025-8-12-21":"1","2025-8-12-22":"R","2025-8-12-23":"R","2025-8-12-24":"1","2025-8-12-25":"1","2025-8-12-26":"1","2025-8-12-27":"1","2025-8-12-28":"1","2025-8-12-29":"R","2025-8-12-30":"R","2025-8-13-1":"R","2025-8-13-2":"R","2025-8-13-3":"1","2025-8-13-4":"1","2025-8-13-5":"1","2025-8-13-6":"1","2025-8-13-7":"1","2025-8-13-8":"R","2025-8-13-9":"R","2025-8-13-10":"1","2025-8-13-11":"1","2025-8-13-12":"1","2025-8-13-13":"1","2025-8-13-14":"1","2025-8-13-15":"R","2025-8-13-16":"R","2025-8-13-17":"1","2025-8-13-18":"1","2025-8-13-19":"1","2025-8-13-20":"1","2025-8-13-21":"1","2025-8-13-22":"R","2025-8-13-23":"R","2025-8-13-24":"1","2025-8-13-25":"1","2025-8-13-26":"1","2025-8-13-27":"1","2025-8-13-28":"5","2025-8-13-29":"R","2025-8-13-30":"R","2025-8-14-1":"R","2025-8-14-2":"R","2025-8-14-3":"1","2025-8-14-4":"1","2025-8-14-5":"1","2025-8-14-6":"1","2025-8-14-7":"1","2025-8-14-8":"R","2025-8-14-9":"R","2025-8-14-10":"1","2025-8-14-11":"1","2025-8-14-12":"1","2025-8-14-13":"1","2025-8-14-14":"1","2025-8-14-15":"R","2025-8-14-16":"R","2025-8-14-17":"1","2025-8-14-18":"1","2025-8-14-19":"1","2025-8-14-20":"1","2025-8-14-21":"1","2025-8-14-22":"R","2025-8-14-23":"R","2025-8-14-24":"F","2025-8-14-25":"1","2025-8-14-26":"1","2025-8-14-27":"1","2025-8-14-28":"1","2025-8-14-29":"R","2025-8-14-30":"R","2025-8-15-1":"R","2025-8-15-2":"R","2025-8-15-3":"1","2025-8-15-4":"F","2025-8-15-5":"1","2025-8-15-6":"1","2025-8-15-7":"1","2025-8-15-8":"R","2025-8-15-9":"R","2025-8-15-10":"1","2025-8-15-11":"1","2025-8-15-12":"1","2025-8-15-13":"1","2025-8-15-14":"1","2025-8-15-15":"R","2025-8-15-16":"R","2025-8-15-17":"1","2025-8-15-18":"1","2025-8-15-19":"1","2025-8-15-20":"1","2025-8-15-21":"1","2025-8-15-22":"R","2025-8-15-23":"R","2025-8-15-24":"F","2025-8-15-25":"1","2025-8-15-26":"1","2025-8-15-27":"1","2025-8-15-28":"1","2025-8-15-29":"R","2025-8-15-30":"R","2025-8-16-1":"R","2025-8-16-2":"R","2025-8-16-3":"1","2025-8-16-4":"1","2025-8-16-5":"1","2025-8-16-6":"1","2025-8-16-7":"1","2025-8-16-8":"R","2025-8-16-9":"R","2025-8-16-10":"1","2025-8-16-11":"1","2025-8-16-12":"1","2025-8-16-13":"1","2025-8-16-14":"1","2025-8-16-15":"R","2025-8-16-16":"R","2025-8-16-17":"1","2025-8-16-18":"1","2025-8-16-19":"1","2025-8-16-20":"1","2025-8-16-21":"F","2025-8-16-22":"R","2025-8-16-23":"R","2025-8-16-24":"1","2025-8-16-25":"1","2025-8-16-26":"1","2025-8-16-27":"1","2025-8-16-28":"1","2025-8-16-29":"R","2025-8-16-30":"R","2025-8-17-1":"RR","2025-8-17-2":"R","2025-8-17-3":"1","2025-8-17-4":"1","2025-8-17-5":"1","2025-8-17-6":"1","2025-8-17-7":"1","2025-8-17-8":"R","2025-8-17-9":"R","2025-8-17-10":"1","2025-8-17-11":"1","2025-8-17-12":"1","2025-8-17-13":"1","2025-8-17-14":"1","2025-8-17-15":"RR","2025-8-17-16":"R","2025-8-17-17":"F","2025-8-17-18":"1","2025-8-17-19":"1","2025-8-17-20":"1","2025-8-17-21":"1","2025-8-17-22":"R","2025-8-17-23":"R","2025-8-17-24":"F","2025-8-17-25":"1","2025-8-17-26":"1","2025-8-17-27":"1","2025-8-17-28":"1","2025-8-17-29":"R","2025-8-17-30":"R","2025-8-18-1":"R","2025-8-18-2":"R","2025-8-18-3":"1","2025-8-18-4":"1","2025-8-18-5":"1","2025-8-18-6":"1","2025-8-18-7":"1","2025-8-18-8":"R","2025-8-18-9":"R","2025-8-18-10":"1","2025-8-18-11":"1","2025-8-18-12":"1","2025-8-18-13":"1","2025-8-18-14":"1","2025-8-18-15":"R","2025-8-18-16":"R","2025-8-18-17":"1","2025-8-18-18":"1","2025-8-18-19":"1","2025-8-18-20":"1","2025-8-18-21":"1","2025-8-18-22":"R","2025-8-18-23":"R","2025-8-18-24":"F","2025-8-18-25":"1","2025-8-18-26":"1","2025-8-18-27":"1","2025-8-18-28":"1","2025-8-18-29":"R","2025-8-18-30":"R","2025-8-19-1":"R","2025-8-19-2":"R","2025-8-19-3":"1","2025-8-19-4":"1","2025-8-19-5":"1","2025-8-19-6":"1","2025-8-19-7":"1","2025-8-19-8":"R","2025-8-19-9":"R","2025-8-19-10":"1","2025-8-19-11":"1","2025-8-19-12":"1","2025-8-19-13":"1","2025-8-19-14":"1","2025-8-19-15":"R","2025-8-19-16":"R","2025-8-19-17":"1","2025-8-19-18":"1","2025-8-19-19":"1","2025-8-19-20":"1","2025-8-19-21":"1","2025-8-19-22":"R","2025-8-19-23":"R","2025-8-19-24":"1","2025-8-19-25":"1","2025-8-19-26":"1","2025-8-19-27":"1","2025-8-19-28":"1","2025-8-19-29":"R","2025-8-19-30":"R","2025-9-0-1":"C","2025-9-0-2":"F","2025-9-0-3":"4","2025-9-0-4":"1","2025-9-0-5":"1","2025-9-0-6":"R","2025-9-0-7":"R","2025-9-0-8":"1","2025-9-0-9":"1","2025-9-0-10":"1","2025-9-0-11":"1","2025-9-0-12":"1","2025-9-0-13":"R","2025-9-0-14":"R","2025-9-0-15":"1","2025-9-0-16":"1","2025-9-0-17":"1","2025-9-0-18":"1","2025-9-0-19":"1","2025-9-0-20":"1","2025-9-0-21":"R","2025-9-0-22":"R","2025-9-0-23":"1","2025-9-0-24":"1","2025-9-0-25":"1","2025-9-0-26":"1","2025-9-0-27":"R","2025-9-0-28":"R","2025-9-0-29":"R","2025-9-0-30":"1","2025-9-0-31":"1","2025-9-1-1":"C","2025-9-1-2":"1","2025-9-1-3":"1","2025-9-1-4":"1","2025-9-1-5":"1","2025-9-1-6":"R","2025-9-1-7":"1","2025-9-1-8":"1","2025-9-1-9":"1","2025-9-1-10":"1","2025-9-1-11":"1","2025-9-1-12":"R","2025-9-1-13":"R","2025-9-1-14":"1","2025-9-1-15":"1","2025-9-1-16":"1","2025-9-1-17":"1","2025-9-1-18":"1","2025-9-1-19":"R","2025-9-1-20":"1","2025-9-1-21":"1","2025-9-1-22":"R","2025-9-1-23":"1","2025-9-1-24":"1","2025-9-1-25":"1","2025-9-1-26":"R","2025-9-1-27":"R","2025-9-1-28":"R","2025-9-1-29":"1","2025-9-1-30":"1","2025-9-1-31":"1","2025-9-2-1":"C","2025-9-2-2":"F","2025-9-2-3":"F","2025-9-2-4":"1","2025-9-2-5":"1","2025-9-2-6":"R","2025-9-2-7":"R","2025-9-2-8":"1","2025-9-2-9":"1","2025-9-2-10":"1","2025-9-2-11":"1","2025-9-2-12":"1","2025-9-2-13":"R","2025-9-2-14":"R","2025-9-2-15":"1","2025-9-2-16":"1","2025-9-2-17":"1","2025-9-2-18":"1","2025-9-2-19":"1","2025-9-2-20":"R","2025-9-2-21":"R","2025-9-2-22":"R","2025-9-2-23":"1","2025-9-2-24":"1","2025-9-2-25":"1","2025-9-2-26":"1","2025-9-2-27":"R","2025-9-2-28":"R","2025-9-2-29":"R","2025-9-2-30":"1","2025-9-2-31":"1","2025-9-3-1":"C","2025-9-3-2":"F","2025-9-3-3":"F","2025-9-3-4":"1","2025-9-3-5":"1","2025-9-3-6":"R","2025-9-3-7":"R","2025-9-3-8":"1","2025-9-3-9":"F","2025-9-3-10":"1","2025-9-3-11":"1","2025-9-3-12":"1","2025-9-3-13":"R","2025-9-3-14":"R","2025-9-3-15":"1","2025-9-3-16":"1","2025-9-3-17":"1","2025-9-3-18":"1","2025-9-3-19":"1","2025-9-3-20":"1","2025-9-3-21":"R","2025-9-3-22":"R","2025-9-3-23":"1","2025-9-3-24":"1","2025-9-3-25":"1","2025-9-3-26":"1","2025-9-3-27":"R","2025-9-3-28":"R","2025-9-3-29":"R","2025-9-3-30":"1","2025-9-3-31":"1","2025-9-4-1":"C","2025-9-4-2":"1","2025-9-4-3":"1","2025-9-4-4":"1","2025-9-4-5":"1","2025-9-4-6":"R","2025-9-4-7":"R","2025-9-4-8":"1","2025-9-4-9":"1","2025-9-4-10":"1","2025-9-4-11":"1","2025-9-4-12":"1","2025-9-4-13":"R","2025-9-4-14":"R","2025-9-4-15":"1","2025-9-4-16":"1","2025-9-4-17":"1","2025-9-4-18":"1","2025-9-4-19":"1","2025-9-4-20":"1","2025-9-4-21":"R","2025-9-4-22":"R","2025-9-4-23":"1","2025-9-4-24":"1","2025-9-4-25":"1","2025-9-4-26":"1","2025-9-4-27":"R","2025-9-4-28":"R","2025-9-4-29":"R","2025-9-4-30":"1","2025-9-4-31":"1","2025-9-5-1":"C","2025-9-5-2":"1","2025-9-5-3":"1","2025-9-5-4":"1","2025-9-5-5":"1","2025-9-5-6":"R","2025-9-5-7":"R","2025-9-5-8":"1","2025-9-5-9":"1","2025-9-5-10":"1","2025-9-5-11":"1","2025-9-5-12":"1","2025-9-5-13":"R","2025-9-5-14":"R","2025-9-5-15":"1","2025-9-5-16":"1","2025-9-5-17":"1","2025-9-5-18":"1","2025-9-5-19":"1","2025-9-5-20":"R","2025-9-5-21":"R","2025-9-5-22":"R","2025-9-5-23":"1","2025-9-5-24":"1","2025-9-5-25":"1","2025-9-5-26":"1","2025-9-5-27":"R","2025-9-5-28":"R","2025-9-5-29":"R","2025-9-5-30":"1","2025-9-5-31":"1","2025-9-6-1":"C","2025-9-6-2":"1","2025-9-6-3":"1","2025-9-6-4":"1","2025-9-6-5":"R","2025-9-6-6":"R","2025-9-6-7":"1","2025-9-6-8":"1","2025-9-6-9":"1","2025-9-6-10":"1","2025-9-6-11":"1","2025-9-6-12":"R","2025-9-6-13":"R","2025-9-6-14":"1","2025-9-6-15":"1","2025-9-6-16":"1","2025-9-6-17":"1","2025-9-6-18":"1","2025-9-6-19":"R","2025-9-6-20":"R","2025-9-6-21":"1","2025-9-6-22":"1","2025-9-6-23":"1","2025-9-6-24":"1","2025-9-6-25":"1","2025-9-6-26":"R","2025-9-6-27":"R","2025-9-6-28":"1","2025-9-6-29":"1","2025-9-6-30":"1","2025-9-6-31":"1","2025-9-7-1":"C","2025-9-7-2":"1","2025-9-7-3":"5","2025-9-7-4":"1","2025-9-7-5":"1","2025-9-7-6":"R","2025-9-7-7":"R","2025-9-7-8":"1","2025-9-7-9":"1","2025-9-7-10":"1","2025-9-7-11":"1","2025-9-7-12":"R","2025-9-7-13":"R","2025-9-7-14":"R","2025-9-7-15":"1","2025-9-7-16":"1","2025-9-7-17":"1","2025-9-7-18":"1","2025-9-7-19":"1","2025-9-7-20":"R","2025-9-7-21":"R","2025-9-7-22":"R","2025-9-7-23":"1","2025-9-7-24":"F","2025-9-7-25":"6","2025-9-7-26":"F","2025-9-7-27":"R","2025-9-7-28":"R","2025-9-7-29":"R","2025-9-7-30":"F","2025-9-7-31":"1","2025-9-8-1":"C","2025-9-8-2":"1","2025-9-8-3":"1","2025-9-8-4":"1","2025-9-8-5":"1","2025-9-8-6":"R","2025-9-8-7":"R","2025-9-8-8":"1","2025-9-8-9":"1","2025-9-8-10":"1","2025-9-8-11":"1","2025-9-8-12":"1","2025-9-8-13":"R","2025-9-8-14":"R","2025-9-8-15":"1","2025-9-8-16":"1","2025-9-8-17":"1","2025-9-8-18":"1","2025-9-8-19":"R","2025-9-8-20":"R","2025-9-8-21":"R","2025-9-8-22":"R","2025-9-8-23":"1","2025-9-8-24":"1","2025-9-8-25":"1","2025-9-8-26":"1","2025-9-8-27":"R","2025-9-8-28":"R","2025-9-8-29":"R","2025-9-8-30":"1","2025-9-8-31":"1","2025-9-9-1":"C","2025-9-9-2":"1","2025-9-9-3":"1","2025-9-9-4":"1","2025-9-9-5":"1","2025-9-9-6":"R","2025-9-9-7":"R","2025-9-9-8":"1","2025-9-9-9":"1","2025-9-9-10":"1","2025-9-9-11":"1","2025-9-9-12":"1","2025-9-9-13":"R","2025-9-9-14":"R","2025-9-9-15":"1","2025-9-9-16":"1","2025-9-9-17":"1","2025-9-9-18":"1","2025-9-9-19":"1","2025-9-9-20":"R","2025-9-9-21":"R","2025-9-9-22":"R","2025-9-9-23":"1","2025-9-9-24":"1","2025-9-9-25":"1","2025-9-9-26":"1","2025-9-9-27":"R","2025-9-9-28":"R","2025-9-9-29":"R","2025-9-9-30":"1","2025-9-9-31":"1","2025-9-10-1":"C","2025-9-10-2":"M","2025-9-10-3":"M","2025-9-10-4":"M","2025-9-10-5":"M","2025-9-10-6":"M","2025-9-10-7":"M","2025-9-10-8":"M","2025-9-10-9":"M","2025-9-10-10":"M","2025-9-10-11":"M","2025-9-10-12":"M","2025-9-10-13":"M","2025-9-10-14":"M","2025-9-10-15":"M","2025-9-10-16":"M","2025-9-10-17":"M","2025-9-10-18":"M","2025-9-10-19":"M","2025-9-10-20":"M","2025-9-10-21":"M","2025-9-10-22":"M","2025-9-10-23":"M","2025-9-10-24":"M","2025-9-10-25":"M","2025-9-10-26":"M","2025-9-10-27":"M","2025-9-10-28":"M","2025-9-10-29":"M","2025-9-10-30":"M","2025-9-10-31":"M","2025-9-11-1":"C","2025-9-11-2":"1","2025-9-11-3":"1","2025-9-11-4":"1","2025-9-11-5":"1","2025-9-11-6":"R","2025-9-11-7":"R","2025-9-11-8":"1","2025-9-11-9":"1","2025-9-11-10":"1","2025-9-11-11":"1","2025-9-11-12":"1","2025-9-11-13":"R","2025-9-11-14":"R","2025-9-11-15":"1","2025-9-11-16":"1","2025-9-11-17":"1","2025-9-11-18":"1","2025-9-11-19":"1","2025-9-11-20":"R","2025-9-11-21":"R","2025-9-11-22":"R","2025-9-11-23":"1","2025-9-11-24":"1","2025-9-11-25":"1","2025-9-11-26":"1","2025-9-11-27":"R","2025-9-11-28":"R","2025-9-11-29":"R","2025-9-11-30":"1","2025-9-11-31":"1","2025-9-12-1":"C","2025-9-12-2":"1","2025-9-12-3":"1","2025-9-12-4":"1","2025-9-12-5":"1","2025-9-12-6":"R","2025-9-12-7":"R","2025-9-12-8":"1","2025-9-12-9":"1","2025-9-12-10":"1","2025-9-12-11":"1","2025-9-12-12":"1","2025-9-12-13":"R","2025-9-12-14":"R","2025-9-12-15":"1","2025-9-12-16":"1","2025-9-12-17":"1","2025-9-12-18":"1","2025-9-12-19":"1","2025-9-12-20":"R","2025-9-12-21":"R","2025-9-12-22":"R","2025-9-12-23":"1","2025-9-12-24":"1","2025-9-12-25":"1","2025-9-12-26":"1","2025-9-12-27":"R","2025-9-12-28":"R","2025-9-12-29":"R","2025-9-12-30":"1","2025-9-12-31":"1","2025-9-13-1":"C","2025-9-13-2":"F","2025-9-13-3":"F","2025-9-13-4":"F","2025-9-13-5":"F","2025-9-13-6":"R","2025-9-13-7":"1","2025-9-13-8":"1","2025-9-13-9":"1","2025-9-13-10":"F","2025-9-13-11":"F","2025-9-13-12":"R","2025-9-13-13":"R","2025-9-13-14":"1","2025-9-13-15":"1","2025-9-13-16":"1","2025-9-13-17":"1","2025-9-13-18":"1","2025-9-13-19":"R","2025-9-13-20":"R","2025-9-13-21":"R","2025-9-13-22":"R","2025-9-13-23":"1","2025-9-13-24":"1","2025-9-13-25":"1","2025-9-13-26":"1","2025-9-13-27":"R","2025-9-13-28":"R","2025-9-13-29":"R","2025-9-13-30":"1","2025-9-13-31":"1","2025-9-14-1":"C","2025-9-14-2":"1","2025-9-14-3":"1","2025-9-14-4":"1","2025-9-14-5":"1","2025-9-14-6":"R","2025-9-14-7":"1","2025-9-14-8":"1","2025-9-14-9":"1","2025-9-14-10":"1","2025-9-14-11":"1","2025-9-14-12":"R","2025-9-14-13":"R","2025-9-14-14":"1","2025-9-14-15":"1","2025-9-14-16":"1","2025-9-14-17":"1","2025-9-14-18":"1","2025-9-14-19":"R","2025-9-14-20":"1","2025-9-14-21":"1","2025-9-14-22":"R","2025-9-14-23":"1","2025-9-14-24":"1","2025-9-14-25":"1","2025-9-14-26":"R","2025-9-14-27":"R","2025-9-14-28":"R","2025-9-14-29":"1","2025-9-14-30":"RR","2025-9-14-31":"1","2025-9-15-1":"C","2025-9-15-2":"1","2025-9-15-3":"1","2025-9-15-4":"1","2025-9-15-5":"1","2025-9-15-6":"R","2025-9-15-7":"R","2025-9-15-8":"1","2025-9-15-9":"1","2025-9-15-10":"1","2025-9-15-11":"1","2025-9-15-12":"1","2025-9-15-13":"R","2025-9-15-14":"R","2025-9-15-15":"1","2025-9-15-16":"1","2025-9-15-17":"1","2025-9-15-18":"1","2025-9-15-19":"R","2025-9-15-20":"R","2025-9-15-21":"R","2025-9-15-22":"R","2025-9-15-23":"1","2025-9-15-24":"1","2025-9-15-25":"1","2025-9-15-26":"1","2025-9-15-27":"R","2025-9-15-28":"R","2025-9-15-29":"R","2025-9-15-30":"1","2025-9-15-31":"1","2025-9-16-1":"C","2025-9-16-2":"1","2025-9-16-3":"1","2025-9-16-4":"1","2025-9-16-5":"1","2025-9-16-6":"R","2025-9-16-7":"R","2025-9-16-8":"1","2025-9-16-9":"1","2025-9-16-10":"1","2025-9-16-11":"1","2025-9-16-12":"1","2025-9-16-13":"R","2025-9-16-14":"R","2025-9-16-15":"1","2025-9-16-16":"1","2025-9-16-17":"1","2025-9-16-18":"1","2025-9-16-19":"1","2025-9-16-20":"R","2025-9-16-21":"R","2025-9-16-22":"R","2025-9-16-23":"1","2025-9-16-24":"1","2025-9-16-25":"1","2025-9-16-26":"1","2025-9-16-27":"R","2025-9-16-28":"RR","2025-9-16-29":"R","2025-9-16-30":"1","2025-9-16-31":"1","2025-9-17-1":"C","2025-9-17-2":"F","2025-9-17-3":"1","2025-9-17-4":"1","2025-9-17-5":"1","2025-9-17-6":"R","2025-9-17-7":"1","2025-9-17-8":"1","2025-9-17-9":"1","2025-9-17-10":"1","2025-9-17-11":"1","2025-9-17-12":"R","2025-9-17-13":"R","2025-9-17-14":"1","2025-9-17-15":"1","2025-9-17-16":"1","2025-9-17-17":"1","2025-9-17-18":"1","2025-9-17-19":"R","2025-9-17-20":"1","2025-9-17-21":"1","2025-9-17-22":"R","2025-9-17-23":"1","2025-9-17-24":"1","2025-9-17-25":"1","2025-9-17-26":"R","2025-9-17-27":"R","2025-9-17-28":"R","2025-9-17-29":"1","2025-9-17-30":"1","2025-9-17-31":"1","2025-9-18-1":"C","2025-9-18-2":"F","2025-9-18-3":"1","2025-9-18-4":"1","2025-9-18-5":"1","2025-9-18-6":"R","2025-9-18-7":"R","2025-9-18-8":"1","2025-9-18-9":"1","2025-9-18-10":"1","2025-9-18-11":"1","2025-9-18-12":"1","2025-9-18-13":"R","2025-9-18-14":"R","2025-9-18-15":"1","2025-9-18-16":"1","2025-9-18-17":"1","2025-9-18-18":"1","2025-9-18-19":"R","2025-9-18-20":"R","2025-9-18-21":"R","2025-9-18-22":"R","2025-9-18-23":"1","2025-9-18-24":"1","2025-9-18-25":"1","2025-9-18-26":"1","2025-9-18-27":"R","2025-9-18-28":"R","2025-9-18-29":"R","2025-9-18-30":"1","2025-9-18-31":"1","2025-9-19-1":"C","2025-9-19-2":"1","2025-9-19-3":"1","2025-9-19-4":"1","2025-9-19-5":"1","2025-9-19-6":"R","2025-9-19-7":"R","2025-9-19-8":"1","2025-9-19-9":"F","2025-9-19-10":"1","2025-9-19-11":"F","2025-9-19-12":"F","2025-9-19-13":"R","2025-9-19-14":"R","2025-9-19-15":"1","2025-9-19-16":"1","2025-9-19-17":"1","2025-9-19-18":"1","2025-9-19-19":"1","2025-9-19-20":"R","2025-9-19-21":"R","2025-9-19-22":"R","2025-9-19-23":"1","2025-9-19-24":"1","2025-9-19-25":"1","2025-9-19-26":"F","2025-9-19-27":"R","2025-9-19-28":"R","2025-9-19-29":"R","2025-9-19-30":"F","2025-9-19-31":"1","2025-10-0-1":"1","2025-10-0-2":"1","2025-10-0-3":"R","2025-10-0-4":"R","2025-10-0-5":"1","2025-10-0-6":"1","2025-10-0-7":"1","2025-10-0-8":"1","2025-10-0-9":"1","2025-10-0-10":"R","2025-10-0-11":"R","2025-10-0-12":"1","2025-10-0-13":"1","2025-10-0-14":"1","2025-10-0-15":"1","2025-10-0-16":"1","2025-10-0-17":"R","2025-10-0-18":"R","2025-10-0-19":"B","2025-10-0-20":"1","2025-10-0-21":"1","2025-10-0-22":"1","2025-10-0-23":"1","2025-10-0-24":"R","2025-10-0-25":"R","2025-10-0-26":"B","2025-10-0-27":"1","2025-10-0-28":"1","2025-10-0-29":"1","2025-10-0-30":"1","2025-10-1-1":"1","2025-10-1-2":"R","2025-10-1-3":"R","2025-10-1-4":"1","2025-10-1-5":"1","2025-10-1-6":"1","2025-10-1-7":"1","2025-10-1-8":"1","2025-10-1-9":"R","2025-10-1-10":"R","2025-10-1-11":"1","2025-10-1-12":"1","2025-10-1-13":"1","2025-10-1-14":"1","2025-10-1-15":"1","2025-10-1-16":"R","2025-10-1-17":"R","2025-10-1-18":"1","2025-10-1-19":"1","2025-10-1-20":"1","2025-10-1-21":"F","2025-10-1-22":"1","2025-10-1-23":"R","2025-10-1-24":"R","2025-10-1-25":"1","2025-10-1-26":"1","2025-10-1-27":"1","2025-10-1-28":"1","2025-10-1-29":"1","2025-10-1-30":"R","2025-10-2-1":"1","2025-10-2-2":"1","2025-10-2-3":"R","2025-10-2-4":"R","2025-10-2-5":"1","2025-10-2-6":"1","2025-10-2-7":"1","2025-10-2-8":"1","2025-10-2-9":"1","2025-10-2-10":"R","2025-10-2-11":"R","2025-10-2-12":"1","2025-10-2-13":"1","2025-10-2-14":"1","2025-10-2-15":"1","2025-10-2-16":"1","2025-10-2-17":"R","2025-10-2-18":"R","2025-10-2-19":"1","2025-10-2-20":"1","2025-10-2-21":"1","2025-10-2-22":"1","2025-10-2-23":"1","2025-10-2-24":"R","2025-10-2-25":"R","2025-10-2-26":"B","2025-10-2-27":"B","2025-10-2-28":"1","2025-10-2-29":"1","2025-10-2-30":"1","2025-10-3-1":"1","2025-10-3-2":"1","2025-10-3-3":"R","2025-10-3-4":"R","2025-10-3-5":"1","2025-10-3-6":"1","2025-10-3-7":"1","2025-10-3-8":"1","2025-10-3-9":"1","2025-10-3-10":"R","2025-10-3-11":"R","2025-10-3-12":"1","2025-10-3-13":"1","2025-10-3-14":"1","2025-10-3-15":"1","2025-10-3-16":"1","2025-10-3-17":"R","2025-10-3-18":"R","2025-10-3-19":"F","2025-10-3-20":"1","2025-10-3-21":"1","2025-10-3-22":"1","2025-10-3-23":"1","2025-10-3-24":"R","2025-10-3-25":"R","2025-10-3-26":"F","2025-10-3-27":"B","2025-10-3-28":"1","2025-10-3-29":"1","2025-10-3-30":"1","2025-10-4-1":"1","2025-10-4-2":"1","2025-10-4-3":"R","2025-10-4-4":"R","2025-10-4-5":"1","2025-10-4-6":"1","2025-10-4-7":"1","2025-10-4-8":"1","2025-10-4-9":"1","2025-10-4-10":"R","2025-10-4-11":"R","2025-10-4-12":"1","2025-10-4-13":"1","2025-10-4-14":"1","2025-10-4-15":"1","2025-10-4-16":"1","2025-10-4-17":"R","2025-10-4-18":"R","2025-10-4-19":"1","2025-10-4-20":"1","2025-10-4-21":"1","2025-10-4-22":"1","2025-10-4-23":"1","2025-10-4-24":"R","2025-10-4-25":"R","2025-10-4-26":"1","2025-10-4-27":"1","2025-10-4-28":"1","2025-10-4-29":"1","2025-10-4-30":"1","2025-10-5-1":"1","2025-10-5-2":"1","2025-10-5-3":"R","2025-10-5-4":"R","2025-10-5-5":"1","2025-10-5-6":"1","2025-10-5-7":"1","2025-10-5-8":"1","2025-10-5-9":"1","2025-10-5-10":"R","2025-10-5-11":"R","2025-10-5-12":"1","2025-10-5-13":"1","2025-10-5-14":"1","2025-10-5-15":"1","2025-10-5-16":"1","2025-10-5-17":"R","2025-10-5-18":"R","2025-10-5-19":"1","2025-10-5-20":"1","2025-10-5-21":"1","2025-10-5-22":"1","2025-10-5-23":"1","2025-10-5-24":"R","2025-10-5-25":"R","2025-10-5-26":"1","2025-10-5-27":"1","2025-10-5-28":"1","2025-10-5-29":"1","2025-10-5-30":"1","2025-10-6-1":"1","2025-10-6-2":"R","2025-10-6-3":"R","2025-10-6-4":"1","2025-10-6-5":"1","2025-10-6-6":"1","2025-10-6-7":"1","2025-10-6-8":"1","2025-10-6-9":"R","2025-10-6-10":"R","2025-10-6-11":"1","2025-10-6-12":"1","2025-10-6-13":"1","2025-10-6-14":"1","2025-10-6-15":"1","2025-10-6-16":"R","2025-10-6-17":"R","2025-10-6-18":"1","2025-10-6-19":"1","2025-10-6-20":"1","2025-10-6-21":"1","2025-10-6-22":"1","2025-10-6-23":"R","2025-10-6-24":"R","2025-10-6-25":"1","2025-10-6-26":"1","2025-10-6-27":"1","2025-10-6-28":"1","2025-10-6-29":"1","2025-10-6-30":"R","2025-10-7-1":"1","2025-10-7-2":"1","2025-10-7-3":"R","2025-10-7-4":"R","2025-10-7-5":"F","2025-10-7-6":"F","2025-10-7-7":"F","2025-10-7-8":"M","2025-10-7-9":"M","2025-10-7-10":"R","2025-10-7-11":"R","2025-10-7-12":"M","2025-10-7-13":"M","2025-10-7-14":"M","2025-10-7-15":"M","2025-10-7-16":"M","2025-10-7-17":"R","2025-10-7-18":"R","2025-10-7-19":"F","2025-10-7-20":"M","2025-10-7-21":"M","2025-10-7-22":"M","2025-10-7-23":"M","2025-10-7-24":"R","2025-10-7-25":"R","2025-10-7-26":"M","2025-10-7-27":"M","2025-10-7-28":"M","2025-10-7-29":"M","2025-10-7-30":"M","2025-10-8-1":"1","2025-10-8-2":"1","2025-10-8-3":"R","2025-10-8-4":"R","2025-10-8-5":"1","2025-10-8-6":"1","2025-10-8-7":"1","2025-10-8-8":"1","2025-10-8-9":"1","2025-10-8-10":"R","2025-10-8-11":"R","2025-10-8-12":"1","2025-10-8-13":"1","2025-10-8-14":"1","2025-10-8-15":"1","2025-10-8-16":"1","2025-10-8-17":"R","2025-10-8-18":"R","2025-10-8-19":"1","2025-10-8-20":"1","2025-10-8-21":"1","2025-10-8-22":"1","2025-10-8-23":"1","2025-10-8-24":"R","2025-10-8-25":"R","2025-10-8-26":"1","2025-10-8-27":"1","2025-10-8-28":"1","2025-10-8-29":"1","2025-10-8-30":"1","2025-10-9-1":"1","2025-10-9-2":"1","2025-10-9-3":"R","2025-10-9-4":"R","2025-10-9-5":"1","2025-10-9-6":"1","2025-10-9-7":"1","2025-10-9-8":"1","2025-10-9-9":"1","2025-10-9-10":"R","2025-10-9-11":"R","2025-10-9-12":"1","2025-10-9-13":"1","2025-10-9-14":"1","2025-10-9-15":"1","2025-10-9-16":"1","2025-10-9-17":"R","2025-10-9-18":"R","2025-10-9-19":"1","2025-10-9-20":"1","2025-10-9-21":"1","2025-10-9-22":"1","2025-10-9-23":"1","2025-10-9-24":"R","2025-10-9-25":"R","2025-10-9-26":"1","2025-10-9-27":"1","2025-10-9-28":"1","2025-10-9-29":"1","2025-10-9-30":"1","2025-10-10-1":"M","2025-10-10-2":"M","2025-10-10-3":"M","2025-10-10-4":"M","2025-10-10-5":"M","2025-10-10-6":"M","2025-10-10-7":"M","2025-10-10-8":"M","2025-10-10-9":"M","2025-10-10-10":"M","2025-10-10-11":"M","2025-10-10-12":"M","2025-10-10-13":"M","2025-10-10-14":"M","2025-10-10-15":"M","2025-10-10-16":"M","2025-10-10-17":"M","2025-10-10-18":"M","2025-10-10-19":"M","2025-10-10-20":"M","2025-10-10-21":"M","2025-10-10-22":"M","2025-10-10-23":"M","2025-10-10-24":"M","2025-10-10-25":"M","2025-10-10-26":"M","2025-10-10-27":"M","2025-10-10-28":"M","2025-10-10-29":"M","2025-10-10-30":"M","2025-10-11-1":"1","2025-10-11-2":"1","2025-10-11-3":"R","2025-10-11-4":"R","2025-10-11-5":"1","2025-10-11-6":"1","2025-10-11-7":"1","2025-10-11-8":"1","2025-10-11-9":"1","2025-10-11-10":"R","2025-10-11-11":"R","2025-10-11-12":"1","2025-10-11-13":"1","2025-10-11-14":"1","2025-10-11-15":"1","2025-10-11-16":"1","2025-10-11-17":"R","2025-10-11-18":"R","2025-10-11-19":"RR","2025-10-11-20":"1","2025-10-11-21":"1","2025-10-11-22":"1","2025-10-11-23":"1","2025-10-11-24":"R","2025-10-11-25":"R","2025-10-11-26":"1","2025-10-11-27":"1","2025-10-11-28":"1","2025-10-11-29":"1","2025-10-11-30":"1","2025-10-12-1":"1","2025-10-12-2":"1","2025-10-12-3":"R","2025-10-12-4":"R","2025-10-12-5":"1","2025-10-12-6":"1","2025-10-12-7":"1","2025-10-12-8":"1","2025-10-12-9":"1","2025-10-12-10":"R","2025-10-12-11":"R","2025-10-12-12":"RR","2025-10-12-13":"1","2025-10-12-14":"1","2025-10-12-15":"1","2025-10-12-16":"1","2025-10-12-17":"R","2025-10-12-18":"R","2025-10-12-19":"1","2025-10-12-20":"1","2025-10-12-21":"1","2025-10-12-22":"1","2025-10-12-23":"1","2025-10-12-24":"R","2025-10-12-25":"R","2025-10-12-26":"1","2025-10-12-27":"1","2025-10-12-28":"1","2025-10-12-29":"1","2025-10-12-30":"1","2025-10-13-1":"1","2025-10-13-2":"1","2025-10-13-3":"R","2025-10-13-4":"R","2025-10-13-5":"1","2025-10-13-6":"1","2025-10-13-7":"1","2025-10-13-8":"1","2025-10-13-9":"1","2025-10-13-10":"R","2025-10-13-11":"R","2025-10-13-12":"1","2025-10-13-13":"1","2025-10-13-14":"1","2025-10-13-15":"1","2025-10-13-16":"1","2025-10-13-17":"R","2025-10-13-18":"R","2025-10-13-19":"1","2025-10-13-20":"1","2025-10-13-21":"1","2025-10-13-22":"1","2025-10-13-23":"1","2025-10-13-24":"R","2025-10-13-25":"R","2025-10-13-26":"1","2025-10-13-27":"1","2025-10-13-28":"1","2025-10-13-29":"1","2025-10-13-30":"1","2025-10-14-1":"1","2025-10-14-2":"R","2025-10-14-3":"R","2025-10-14-4":"1","2025-10-14-5":"1","2025-10-14-6":"1","2025-10-14-7":"1","2025-10-14-8":"1","2025-10-14-9":"R","2025-10-14-10":"R","2025-10-14-11":"1","2025-10-14-12":"1","2025-10-14-13":"1","2025-10-14-14":"1","2025-10-14-15":"1","2025-10-14-16":"R","2025-10-14-17":"R","2025-10-14-18":"1","2025-10-14-19":"1","2025-10-14-20":"1","2025-10-14-21":"1","2025-10-14-22":"1","2025-10-14-23":"R","2025-10-14-24":"R","2025-10-14-25":"1","2025-10-14-26":"1","2025-10-14-27":"1","2025-10-14-28":"1","2025-10-14-29":"1","2025-10-14-30":"R","2025-10-15-1":"1","2025-10-15-2":"1","2025-10-15-3":"R","2025-10-15-4":"R","2025-10-15-5":"1","2025-10-15-6":"1","2025-10-15-7":"1","2025-10-15-8":"1","2025-10-15-9":"1","2025-10-15-10":"R","2025-10-15-11":"R","2025-10-15-12":"F","2025-10-15-13":"F","2025-10-15-14":"F","2025-10-15-15":"F","2025-10-15-16":"F","2025-10-15-17":"R","2025-10-15-18":"R","2025-10-15-19":"1","2025-10-15-20":"1","2025-10-15-21":"1","2025-10-15-22":"1","2025-10-15-23":"1","2025-10-15-24":"R","2025-10-15-25":"R","2025-10-15-26":"1","2025-10-15-27":"1","2025-10-15-28":"F","2025-10-15-29":"F","2025-10-15-30":"F","2025-10-16-1":"1","2025-10-16-2":"1","2025-10-16-3":"R","2025-10-16-4":"R","2025-10-16-5":"1","2025-10-16-6":"1","2025-10-16-7":"1","2025-10-16-8":"1","2025-10-16-9":"1","2025-10-16-10":"R","2025-10-16-11":"R","2025-10-16-12":"1","2025-10-16-13":"1","2025-10-16-14":"1","2025-10-16-15":"1","2025-10-16-16":"1","2025-10-16-17":"R","2025-10-16-18":"R","2025-10-16-19":"1","2025-10-16-20":"1","2025-10-16-21":"1","2025-10-16-22":"1","2025-10-16-23":"1","2025-10-16-24":"R","2025-10-16-25":"R","2025-10-16-26":"1","2025-10-16-27":"F","2025-10-16-28":"1","2025-10-16-29":"1","2025-10-16-30":"1","2025-10-17-1":"1","2025-10-17-2":"1","2025-10-17-3":"R","2025-10-17-4":"1","2025-10-17-5":"1","2025-10-17-6":"1","2025-10-17-7":"1","2025-10-17-8":"1","2025-10-17-9":"R","2025-10-17-10":"R","2025-10-17-11":"1","2025-10-17-12":"1","2025-10-17-13":"1","2025-10-17-14":"1","2025-10-17-15":"1","2025-10-17-16":"R","2025-10-17-17":"R","2025-10-17-18":"1","2025-10-17-19":"1","2025-10-17-20":"1","2025-10-17-21":"1","2025-10-17-22":"1","2025-10-17-23":"R","2025-10-17-24":"R","2025-10-17-25":"1","2025-10-17-26":"1","2025-10-17-27":"1","2025-10-17-28":"1","2025-10-17-29":"1","2025-10-17-30":"R","2025-10-18-1":"1","2025-10-18-2":"1","2025-10-18-3":"R","2025-10-18-4":"R","2025-10-18-5":"1","2025-10-18-6":"1","2025-10-18-7":"1","2025-10-18-8":"1","2025-10-18-9":"1","2025-10-18-10":"R","2025-10-18-11":"R","2025-10-18-12":"F","2025-10-18-13":"F","2025-10-18-14":"F","2025-10-18-15":"F","2025-10-18-16":"F","2025-10-18-17":"R","2025-10-18-18":"R","2025-10-18-19":"1","2025-10-18-20":"1","2025-10-18-21":"F","2025-10-18-22":"1","2025-10-18-23":"1","2025-10-18-24":"R","2025-10-18-25":"R","2025-10-18-26":"1","2025-10-18-27":"1","2025-10-18-28":"1","2025-10-18-29":"1","2025-10-18-30":"1","2025-10-19-1":"1","2025-10-19-2":"F","2025-10-19-3":"R","2025-10-19-4":"R","2025-10-19-5":"F","2025-10-19-6":"F","2025-10-19-7":"1","2025-10-19-8":"1","2025-10-19-9":"1","2025-10-19-10":"R","2025-10-19-11":"R","2025-10-19-12":"F","2025-10-19-13":"F","2025-10-19-14":"1","2025-10-19-15":"1","2025-10-19-16":"1","2025-10-19-17":"R","2025-10-19-18":"R","2025-10-19-19":"F","2025-10-19-20":"F","2025-10-19-21":"1","2025-10-19-22":"1","2025-10-19-23":"1","2025-10-19-24":"R","2025-10-19-25":"R","2025-10-19-26":"F","2025-10-19-27":"F","2025-10-19-28":"1","2025-10-19-29":"1","2025-10-19-30":"1","2025-11-0-1":"R","2025-11-0-2":"R","2025-11-0-3":"B","2025-11-0-4":"B","2025-11-0-5":"1","2025-11-0-6":"1","2025-11-0-7":"1","2025-11-0-8":"R","2025-11-0-9":"R","2025-11-0-10":"B","2025-11-0-11":"B","2025-11-0-12":"1","2025-11-0-13":"1","2025-11-0-14":"1","2025-11-0-15":"1","2025-11-0-16":"1","2025-11-0-17":"R","2025-11-0-18":"1","2025-11-0-19":"1","2025-11-0-20":"1","2025-11-0-21":"4","2025-11-0-22":"R","2025-11-0-23":"R","2025-11-0-24":"F","2025-11-0-25":"RR","2025-11-0-26":"1","2025-11-0-27":"6","2025-11-0-28":"5","2025-11-0-29":"R","2025-11-0-30":"1","2025-11-0-31":"1","2025-11-1-1":"R","2025-11-1-2":"1","2025-11-1-3":"1","2025-11-1-4":"1","2025-11-1-5":"1","2025-11-1-6":"7","2025-11-1-7":"R","2025-11-1-8":"R","2025-11-1-9":"1","2025-11-1-10":"1","2025-11-1-11":"1","2025-11-1-12":"1","2025-11-1-13":"1","2025-11-1-14":"R","2025-11-1-15":"1","2025-11-1-16":"6","2025-11-1-17":"R","2025-11-1-18":"F","2025-11-1-19":"F","2025-11-1-20":"F","2025-11-1-21":"R","2025-11-1-22":"R","2025-11-1-23":"F","2025-11-1-24":"F","2025-11-1-25":"F","2025-11-1-26":"F","2025-11-1-27":"F","2025-11-1-28":"R","2025-11-1-29":"R","2025-11-1-30":"1","2025-11-1-31":"F","2025-11-2-1":"R","2025-11-2-2":"R","2025-11-2-3":"B","2025-11-2-4":"B","2025-11-2-5":"1","2025-11-2-6":"1","2025-11-2-7":"1","2025-11-2-8":"R","2025-11-2-9":"R","2025-11-2-10":"B","2025-11-2-11":"B","2025-11-2-12":"1","2025-11-2-13":"1","2025-11-2-14":"1","2025-11-2-15":"1","2025-11-2-16":"1","2025-11-2-17":"R","2025-11-2-18":"R","2025-11-2-19":"1","2025-11-2-20":"1","2025-11-2-21":"7","2025-11-2-22":"R","2025-11-2-23":"R","2025-11-2-24":"F","2025-11-2-25":"F","2025-11-2-26":"1","2025-11-2-27":"1","2025-11-2-28":"1","2025-11-2-29":"R","2025-11-2-30":"1","2025-11-2-31":"1","2025-11-3-1":"R","2025-11-3-2":"R","2025-11-3-3":"B","2025-11-3-4":"B","2025-11-3-5":"1","2025-11-3-6":"1","2025-11-3-7":"1","2025-11-3-8":"R","2025-11-3-9":"R","2025-11-3-10":"B","2025-11-3-11":"B","2025-11-3-12":"1","2025-11-3-13":"1","2025-11-3-14":"1","2025-11-3-15":"R","2025-11-3-16":"1","2025-11-3-17":"R","2025-11-3-18":"1","2025-11-3-19":"1","2025-11-3-20":"1","2025-11-3-21":"1","2025-11-3-22":"R","2025-11-3-23":"R","2025-11-3-24":"F","2025-11-3-25":"1","2025-11-3-26":"1","2025-11-3-27":"1","2025-11-3-28":"5","2025-11-3-29":"R","2025-11-3-30":"1","2025-11-3-31":"1","2025-11-4-1":"R","2025-11-4-2":"R","2025-11-4-3":"1","2025-11-4-4":"1","2025-11-4-5":"1","2025-11-4-6":"1","2025-11-4-7":"1","2025-11-4-8":"R","2025-11-4-9":"R","2025-11-4-10":"1","2025-11-4-11":"1","2025-11-4-12":"1","2025-11-4-13":"1","2025-11-4-14":"1","2025-11-4-15":"1","2025-11-4-16":"1","2025-11-4-17":"R","2025-11-4-18":"1","2025-11-4-19":"1","2025-11-4-20":"1","2025-11-4-21":"1","2025-11-4-22":"R","2025-11-4-23":"R","2025-11-4-24":"RR","2025-11-4-25":"F","2025-11-4-26":"1","2025-11-4-27":"1","2025-11-4-28":"6","2025-11-4-29":"R","2025-11-4-30":"1","2025-11-4-31":"1","2025-11-5-1":"R","2025-11-5-2":"R","2025-11-5-3":"1","2025-11-5-4":"1","2025-11-5-5":"1","2025-11-5-6":"1","2025-11-5-7":"1","2025-11-5-8":"R","2025-11-5-9":"R","2025-11-5-10":"1","2025-11-5-11":"1","2025-11-5-12":"1","2025-11-5-13":"1","2025-11-5-14":"1","2025-11-5-15":"1","2025-11-5-16":"1","2025-11-5-17":"R","2025-11-5-18":"M","2025-11-5-19":"M","2025-11-5-20":"M","2025-11-5-21":"M","2025-11-5-22":"R","2025-11-5-23":"R","2025-11-5-24":"F","2025-11-5-25":"F","2025-11-5-26":"1","2025-11-5-27":"F","2025-11-5-28":"F","2025-11-5-29":"R","2025-11-5-30":"F","2025-11-5-31":"1","2025-11-6-1":"R","2025-11-6-2":"1","2025-11-6-3":"1","2025-11-6-4":"1","2025-11-6-5":"1","2025-11-6-6":"1","2025-11-6-7":"R","2025-11-6-8":"R","2025-11-6-9":"1","2025-11-6-10":"1","2025-11-6-11":"1","2025-11-6-12":"1","2025-11-6-13":"1","2025-11-6-14":"R","2025-11-6-15":"R","2025-11-6-16":"1","2025-11-6-17":"1","2025-11-6-18":"1","2025-11-6-19":"1","2025-11-6-20":"1","2025-11-6-21":"R","2025-11-6-22":"R","2025-11-6-23":"1","2025-11-6-24":"F","2025-11-6-25":"1","2025-11-6-26":"1","2025-11-6-27":"1","2025-11-6-28":"R","2025-11-6-29":"R","2025-11-6-30":"1","2025-11-6-31":"1","2025-11-9-1":"R","2025-11-9-2":"R","2025-11-9-3":"1","2025-11-9-4":"1","2025-11-9-5":"1","2025-11-9-6":"1","2025-11-9-7":"1","2025-11-9-8":"R","2025-11-9-9":"R","2025-11-9-10":"1","2025-11-9-11":"1","2025-11-9-12":"1","2025-11-9-13":"1","2025-11-9-14":"1","2025-11-9-15":"1","2025-11-9-16":"1","2025-11-9-17":"R","2025-11-9-18":"1","2025-11-9-19":"1","2025-11-9-20":"1","2025-11-9-21":"1","2025-11-9-22":"R","2025-11-9-23":"R","2025-11-9-24":"RR","2025-11-9-25":"F","2025-11-9-26":"1","2025-11-9-27":"1","2025-11-9-28":"1","2025-11-9-29":"1","2025-11-9-30":"R","2025-11-9-31":"1","2025-11-11-1":"R","2025-11-11-2":"R","2025-11-11-3":"1","2025-11-11-4":"1","2025-11-11-5":"1","2025-11-11-6":"1","2025-11-11-7":"1","2025-11-11-8":"R","2025-11-11-9":"R","2025-11-11-10":"1","2025-11-11-11":"1","2025-11-11-12":"1","2025-11-11-13":"1","2025-11-11-14":"1","2025-11-11-15":"1","2025-11-11-16":"1","2025-11-11-17":"R","2025-11-11-18":"1","2025-11-11-19":"1","2025-11-11-20":"1","2025-11-11-21":"1","2025-11-11-22":"R","2025-11-11-23":"R","2025-11-11-24":"RR","2025-11-11-25":"F","2025-11-11-26":"1","2025-11-11-27":"1","2025-11-11-28":"1","2025-11-11-29":"R","2025-11-11-30":"F","2025-11-11-31":"1","2025-11-12-1":"R","2025-11-12-2":"R","2025-11-12-3":"1","2025-11-12-4":"1","2025-11-12-5":"1","2025-11-12-6":"1","2025-11-12-7":"1","2025-11-12-8":"R","2025-11-12-9":"R","2025-11-12-10":"1","2025-11-12-11":"1","2025-11-12-12":"1","2025-11-12-13":"1","2025-11-12-14":"1","2025-11-12-15":"1","2025-11-12-16":"1","2025-11-12-17":"R","2025-11-12-18":"1","2025-11-12-19":"1","2025-11-12-20":"1","2025-11-12-21":"1","2025-11-12-22":"R","2025-11-12-23":"R","2025-11-12-24":"RR","2025-11-12-25":"F","2025-11-12-26":"1","2025-11-12-27":"1","2025-11-12-28":"1","2025-11-12-29":"R","2025-11-12-30":"1","2025-11-12-31":"1","2025-11-13-1":"R","2025-11-13-2":"R","2025-11-13-3":"F","2025-11-13-4":"F","2025-11-13-5":"1","2025-11-13-6":"1","2025-11-13-7":"1","2025-11-13-8":"R","2025-11-13-9":"R","2025-11-13-10":"1","2025-11-13-11":"1","2025-11-13-12":"1","2025-11-13-13":"1","2025-11-13-14":"1","2025-11-13-15":"1","2025-11-13-16":"1","2025-11-13-17":"R","2025-11-13-18":"1","2025-11-13-19":"R","2025-11-13-20":"1","2025-11-13-21":"1","2025-11-13-22":"R","2025-11-13-23":"F","2025-11-13-24":"F","2025-11-13-25":"RR","2025-11-13-26":"1","2025-11-13-27":"1","2025-11-13-28":"1","2025-11-13-29":"R","2025-11-13-30":"1","2025-11-13-31":"1","2025-11-14-1":"R","2025-11-14-2":"1","2025-11-14-3":"1","2025-11-14-4":"1","2025-11-14-5":"1","2025-11-14-6":"1","2025-11-14-7":"R","2025-11-14-8":"R","2025-11-14-9":"1","2025-11-14-10":"1","2025-11-14-11":"1","2025-11-14-12":"1","2025-11-14-13":"1","2025-11-14-14":"R","2025-11-14-15":"1","2025-11-14-16":"1","2025-11-14-17":"R","2025-11-14-18":"1","2025-11-14-19":"1","2025-11-14-20":"1","2025-11-14-21":"1","2025-11-14-22":"R","2025-11-14-23":"1","2025-11-14-24":"RR","2025-11-14-25":"F","2025-11-14-26":"1","2025-11-14-27":"1","2025-11-14-28":"R","2025-11-14-29":"R","2025-11-14-30":"F","2025-11-14-31":"1","2025-11-17-1":"R","2025-11-17-2":"1","2025-11-17-3":"1","2025-11-17-4":"1","2025-11-17-5":"1","2025-11-17-6":"1","2025-11-17-7":"R","2025-11-17-8":"R","2025-11-17-9":"1","2025-11-17-10":"1","2025-11-17-11":"1","2025-11-17-12":"1","2025-11-17-13":"1","2025-11-17-14":"R","2025-11-17-15":"1","2025-11-17-16":"1","2025-11-17-17":"R","2025-11-17-18":"1","2025-11-17-19":"1","2025-11-17-20":"1","2025-11-17-21":"1","2025-11-17-22":"R","2025-11-17-23":"1","2025-11-17-24":"RR","2025-11-17-25":"F","2025-11-17-26":"1","2025-11-17-27":"1","2025-11-17-28":"R","2025-11-17-29":"R","2025-11-17-30":"F","2025-11-17-31":"1","2025-11-18-1":"R","2025-11-18-2":"R","2025-11-18-3":"3","2025-11-18-4":"F","2025-11-18-5":"F","2025-11-18-6":"F","2025-11-18-7":"F","2025-11-18-8":"R","2025-11-18-9":"R","2025-11-18-10":"1","2025-11-18-11":"1","2025-11-18-12":"1","2025-11-18-13":"1","2025-11-18-14":"1","2025-11-18-15":"1","2025-11-18-16":"1","2025-11-18-17":"R","2025-11-18-18":"1","2025-11-18-19":"4","2025-11-18-20":"1","2025-11-18-21":"1","2025-11-18-22":"R","2025-11-18-23":"1","2025-11-18-24":"RR","2025-11-18-25":"F","2025-11-18-26":"1","2025-11-18-27":"1","2025-11-18-28":"1","2025-11-18-29":"R","2025-11-18-30":"1","2025-11-18-31":"1","2026-0-0-1":"R","2026-0-0-2":"1","2026-0-0-3":"B","2026-0-0-4":"B","2026-0-0-5":"B","2026-0-0-6":"B","2026-0-0-7":"B","2026-0-0-8":"B","2026-0-0-9":"R","2026-0-0-10":"R","2026-0-0-11":"B","2026-0-0-12":"R","2026-0-0-13":"R","2026-0-0-14":"F","2026-0-0-15":"F","2026-0-0-16":"F","2026-0-0-17":"F","2026-0-0-18":"F","2026-0-0-19":"R","2026-0-0-20":"R","2026-0-0-21":"F","2026-0-0-22":"F","2026-0-0-23":"6","2026-0-0-24":"6","2026-0-0-25":"1","2026-0-0-26":"R","2026-0-0-27":"R","2026-0-0-28":"1","2026-0-0-29":"OFF","2026-0-0-30":"1","2026-0-0-31":"1","2026-0-2-1":"R","2026-0-2-2":"1","2026-0-2-3":"F","2026-0-2-4":"F","2026-0-2-5":"B","2026-0-2-6":"B","2026-0-2-7":"B","2026-0-2-8":"R","2026-0-2-9":"B","2026-0-2-10":"B","2026-0-2-11":"R","2026-0-2-12":"R","2026-0-2-13":"1","2026-0-2-14":"R","2026-0-2-15":"1","2026-0-2-16":"1","2026-0-2-17":"1","2026-0-2-18":"1","2026-0-2-19":"R","2026-0-2-20":"R","2026-0-2-21":"1","2026-0-2-22":"1","2026-0-2-23":"1","2026-0-2-24":"1","2026-0-2-25":"1","2026-0-2-26":"R","2026-0-2-27":"R","2026-0-2-28":"1","2026-0-2-29":"OFF","2026-0-2-30":"1","2026-0-2-31":"1","2026-0-3-1":"R","2026-0-3-2":"1","2026-0-3-3":"F","2026-0-3-4":"F","2026-0-3-5":"B","2026-0-3-6":"B","2026-0-3-7":"R","2026-0-3-8":"B","2026-0-3-9":"B","2026-0-3-10":"B","2026-0-3-11":"R","2026-0-3-12":"1","2026-0-3-13":"1","2026-0-3-14":"1","2026-0-3-15":"R","2026-0-3-16":"1","2026-0-3-17":"1","2026-0-3-18":"R","2026-0-3-19":"R","2026-0-3-20":"R","2026-0-3-21":"1","2026-0-3-22":"1","2026-0-3-23":"1","2026-0-3-24":"1","2026-0-3-25":"1","2026-0-3-26":"R","2026-0-3-27":"R","2026-0-3-28":"1","2026-0-3-29":"OFF","2026-0-3-30":"1","2026-0-3-31":"1","2026-0-4-1":"R","2026-0-4-2":"1","2026-0-4-3":"F","2026-0-4-4":"F","2026-0-4-5":"R","2026-0-4-6":"R","2026-0-4-7":"F","2026-0-4-8":"F","2026-0-4-9":"F","2026-0-4-10":"F","2026-0-4-11":"F","2026-0-4-12":"R","2026-0-4-13":"R","2026-0-4-14":"F","2026-0-4-15":"F","2026-0-4-16":"F","2026-0-4-17":"F","2026-0-4-18":"F","2026-0-4-19":"R","2026-0-4-20":"R","2026-0-4-21":"1","2026-0-4-22":"1","2026-0-4-23":"1","2026-0-4-24":"1","2026-0-4-25":"1","2026-0-4-26":"R","2026-0-4-27":"R","2026-0-4-28":"1","2026-0-4-29":"OFF","2026-0-4-30":"1","2026-0-4-31":"1","2026-0-5-1":"R","2026-0-5-2":"1","2026-0-5-3":"F","2026-0-5-4":"F","2026-0-5-5":"R","2026-0-5-6":"R","2026-0-5-7":"F","2026-0-5-8":"F","2026-0-5-9":"F","2026-0-5-10":"F","2026-0-5-11":"F","2026-0-5-12":"R","2026-0-5-13":"R","2026-0-5-14":"F","2026-0-5-15":"F","2026-0-5-16":"F","2026-0-5-17":"F","2026-0-5-18":"F","2026-0-5-19":"R","2026-0-5-20":"R","2026-0-5-21":"1","2026-0-5-22":"1","2026-0-5-23":"1","2026-0-5-24":"1","2026-0-5-25":"1","2026-0-5-26":"R","2026-0-5-27":"R","2026-0-5-28":"1","2026-0-5-29":"OFF","2026-0-5-30":"1","2026-0-5-31":"1","2026-0-6-1":"R","2026-0-6-2":"F","2026-0-6-3":"F","2026-0-6-4":"F","2026-0-6-5":"R","2026-0-6-6":"R","2026-0-6-7":"F","2026-0-6-8":"F","2026-0-6-9":"F","2026-0-6-10":"F","2026-0-6-11":"F","2026-0-9-1":"R","2026-0-9-2":"1","2026-0-9-3":"F","2026-0-9-4":"F","2026-0-9-5":"R","2026-0-9-6":"R","2026-0-9-7":"F","2026-0-9-8":"F","2026-0-9-9":"F","2026-0-9-10":"F","2026-0-9-11":"F","2026-0-9-12":"R","2026-0-9-13":"R","2026-0-9-14":"F","2026-0-9-15":"F","2026-0-9-16":"F","2026-0-9-17":"F","2026-0-9-18":"F","2026-0-9-19":"R","2026-0-9-20":"R","2026-0-9-21":"1","2026-0-9-22":"1","2026-0-9-23":"1","2026-0-9-24":"1","2026-0-9-25":"1","2026-0-9-26":"R","2026-0-9-27":"R","2026-0-9-28":"1","2026-0-9-29":"OFF","2026-0-9-30":"1","2026-0-9-31":"1","2026-0-11-1":"R","2026-0-11-2":"1","2026-0-11-3":"1","2026-0-11-4":"F","2026-0-11-5":"R","2026-0-11-6":"R","2026-0-11-7":"F","2026-0-11-8":"F","2026-0-11-9":"F","2026-0-11-10":"F","2026-0-11-11":"F","2026-0-11-12":"R","2026-0-11-13":"R","2026-0-11-14":"F","2026-0-11-15":"F","2026-0-11-16":"F","2026-0-11-17":"F","2026-0-11-18":"F","2026-0-11-19":"R","2026-0-11-20":"R","2026-0-11-21":"1","2026-0-11-22":"1","2026-0-11-23":"1","2026-0-11-24":"1","2026-0-11-25":"1","2026-0-11-26":"R","2026-0-11-27":"R","2026-0-11-28":"1","2026-0-11-29":"OFF","2026-0-11-30":"1","2026-0-11-31":"1","2026-0-12-1":"R","2026-0-12-2":"1","2026-0-12-3":"1","2026-0-12-4":"F","2026-0-12-5":"R","2026-0-12-6":"R","2026-0-12-7":"F","2026-0-12-8":"F","2026-0-12-9":"F","2026-0-12-10":"F","2026-0-12-11":"F","2026-0-12-12":"R","2026-0-12-13":"R","2026-0-12-14":"F","2026-0-12-15":"F","2026-0-12-16":"F","2026-0-12-17":"F","2026-0-12-18":"F","2026-0-12-19":"R","2026-0-12-20":"R","2026-0-12-21":"F","2026-0-12-22":"F","2026-0-12-23":"F","2026-0-12-24":"F","2026-0-12-25":"F","2026-0-12-26":"R","2026-0-12-27":"R","2026-0-12-28":"F","2026-0-12-29":"OFF","2026-0-12-30":"F","2026-0-12-31":"F","2026-0-13-1":"R","2026-0-13-2":"1","2026-0-13-3":"F","2026-0-13-4":"F","2026-0-13-5":"R","2026-0-13-6":"R","2026-0-13-7":"F","2026-0-13-8":"F","2026-0-13-9":"F","2026-0-13-10":"F","2026-0-13-11":"F","2026-0-13-12":"R","2026-0-13-13":"R","2026-0-13-14":"F","2026-0-13-15":"F","2026-0-13-16":"F","2026-0-13-17":"F","2026-0-13-18":"F","2026-0-13-19":"R","2026-0-13-20":"R","2026-0-13-21":"1","2026-0-13-22":"1","2026-0-13-23":"1","2026-0-13-24":"1","2026-0-13-25":"1","2026-0-13-26":"R","2026-0-13-27":"R","2026-0-13-28":"1","2026-0-13-29":"OFF","2026-0-13-30":"1","2026-0-13-31":"1","2026-0-14-1":"R","2026-0-14-2":"1","2026-0-14-3":"1","2026-0-14-4":"F","2026-0-14-5":"R","2026-0-14-6":"R","2026-0-14-7":"F","2026-0-14-8":"F","2026-0-14-9":"F","2026-0-14-10":"F","2026-0-14-11":"F","2026-0-14-12":"R","2026-0-14-13":"R","2026-0-14-14":"F","2026-0-14-15":"F","2026-0-14-16":"F","2026-0-14-17":"F","2026-0-14-18":"F","2026-0-14-19":"R","2026-0-14-20":"R","2026-0-14-21":"1","2026-0-14-22":"1","2026-0-14-23":"1","2026-0-14-24":"1","2026-0-14-25":"1","2026-0-14-26":"R","2026-0-14-27":"R","2026-0-14-28":"1","2026-0-14-29":"OFF","2026-0-14-30":"1","2026-0-14-31":"1","2026-0-17-1":"R","2026-0-17-2":"1","2026-0-17-3":"1","2026-0-17-4":"F","2026-0-17-5":"R","2026-0-17-6":"R","2026-0-17-7":"F","2026-0-17-8":"F","2026-0-17-9":"F","2026-0-17-10":"F","2026-0-17-11":"F","2026-0-17-12":"R","2026-0-17-13":"R","2026-0-17-14":"F","2026-0-17-15":"F","2026-0-17-16":"F","2026-0-17-17":"F","2026-0-17-18":"F","2026-0-17-19":"R","2026-0-17-20":"R","2026-0-17-21":"1","2026-0-17-22":"1","2026-0-17-23":"5","2026-0-17-24":"1","2026-0-17-25":"1","2026-0-17-26":"R","2026-0-17-27":"R","2026-0-17-28":"1","2026-0-17-29":"OFF","2026-0-17-30":"1","2026-0-17-31":"1","2026-0-18-1":"R","2026-0-18-2":"F","2026-0-18-3":"F","2026-0-18-4":"F","2026-0-18-5":"R","2026-0-18-6":"R","2026-0-18-7":"F","2026-0-18-8":"F","2026-0-18-9":"F","2026-0-18-10":"F","2026-0-18-11":"F","2026-0-18-12":"R","2026-0-18-13":"R","2026-0-18-14":"F","2026-0-18-15":"F","2026-0-18-16":"F","2026-0-18-17":"F","2026-0-18-18":"F","2026-0-18-19":"R","2026-0-18-20":"R","2026-0-18-21":"F","2026-0-18-22":"F","2026-0-18-23":"F","2026-0-18-24":"F","2026-0-18-25":"F","2026-0-18-26":"R","2026-0-18-27":"R","2026-0-18-28":"F","2026-0-18-29":"OFF","2026-0-18-30":"F","2026-0-18-31":"F","2026-1-0-1":"1","2026-1-0-2":"R","2026-1-0-3":"R","2026-1-0-4":"F","2026-1-0-5":"F","2026-1-0-6":"1","2026-1-0-7":"1","2026-1-0-8":"6","2026-1-0-9":"R","2026-1-0-10":"R","2026-1-0-11":"7","2026-1-0-12":"F","2026-1-0-13":"1","2026-1-0-14":"1","2026-1-0-15":"1","2026-1-0-16":"R","2026-1-0-17":"R","2026-1-0-18":"1","2026-1-0-19":"F","2026-1-0-20":"5","2026-1-0-21":"1","2026-1-0-22":"1","2026-1-0-23":"R","2026-1-0-24":"R","2026-1-0-25":"1","2026-1-0-26":"F","2026-1-0-27":"6","2026-1-0-28":"1","2026-1-2-1":"1","2026-1-2-2":"R","2026-1-2-3":"R","2026-1-2-4":"1","2026-1-2-5":"1","2026-1-2-6":"1","2026-1-2-7":"1","2026-1-2-8":"1","2026-1-2-9":"R","2026-1-2-10":"R","2026-1-2-11":"1","2026-1-2-12":"1","2026-1-2-13":"1","2026-1-2-14":"1","2026-1-2-15":"1","2026-1-2-16":"R","2026-1-2-17":"R","2026-1-2-18":"1","2026-1-2-19":"1","2026-1-2-20":"1","2026-1-2-21":"1","2026-1-2-22":"1","2026-1-2-23":"R","2026-1-2-24":"R","2026-1-2-25":"F","2026-1-2-26":"F","2026-1-2-27":"F","2026-1-2-28":"F","2026-1-3-1":"1","2026-1-3-2":"R","2026-1-3-3":"R","2026-1-3-4":"F","2026-1-3-5":"1","2026-1-3-6":"1","2026-1-3-7":"1","2026-1-3-8":"1","2026-1-3-9":"R","2026-1-3-10":"R","2026-1-3-11":"6","2026-1-3-12":"1","2026-1-3-13":"1","2026-1-3-14":"1","2026-1-3-15":"1","2026-1-3-16":"R","2026-1-3-17":"R","2026-1-3-18":"1","2026-1-3-19":"1","2026-1-3-20":"1","2026-1-3-21":"1","2026-1-3-22":"1","2026-1-3-23":"R","2026-1-3-24":"R","2026-1-3-25":"1","2026-1-3-26":"1","2026-1-3-27":"1","2026-1-3-28":"1","2026-1-4-1":"1","2026-1-4-2":"R","2026-1-4-3":"R","2026-1-4-4":"1","2026-1-4-5":"6","2026-1-4-6":"1","2026-1-4-7":"1","2026-1-4-8":"1","2026-1-4-9":"R","2026-1-4-10":"R","2026-1-4-11":"1","2026-1-4-12":"1","2026-1-4-13":"1","2026-1-4-14":"1","2026-1-4-15":"1","2026-1-4-16":"R","2026-1-4-17":"R","2026-1-4-18":"1","2026-1-4-19":"1","2026-1-4-20":"1","2026-1-4-21":"1","2026-1-4-22":"1","2026-1-4-23":"R","2026-1-4-24":"R","2026-1-4-25":"1","2026-1-4-26":"1","2026-1-4-27":"1","2026-1-4-28":"1","2026-1-5-1":"1","2026-1-5-2":"R","2026-1-5-3":"R","2026-1-5-4":"1","2026-1-5-5":"1","2026-1-5-6":"1","2026-1-5-7":"1","2026-1-5-8":"1","2026-1-5-9":"R","2026-1-5-10":"R","2026-1-5-11":"7","2026-1-5-12":"1","2026-1-5-13":"1","2026-1-5-14":"1","2026-1-5-15":"1","2026-1-5-16":"R","2026-1-5-17":"R","2026-1-5-18":"1","2026-1-5-19":"1","2026-1-5-20":"1","2026-1-5-21":"1","2026-1-5-22":"1","2026-1-5-23":"R","2026-1-5-24":"R","2026-1-5-25":"1","2026-1-5-26":"1","2026-1-5-27":"1","2026-1-5-28":"1","2026-1-9-1":"1","2026-1-9-2":"R","2026-1-9-3":"R","2026-1-9-4":"1","2026-1-9-5":"1","2026-1-9-6":"1","2026-1-9-7":"1","2026-1-9-8":"1","2026-1-9-9":"R","2026-1-9-10":"R","2026-1-9-11":"7","2026-1-9-12":"1","2026-1-9-13":"1","2026-1-9-14":"1","2026-1-9-15":"1","2026-1-9-16":"R","2026-1-9-17":"R","2026-1-9-18":"1","2026-1-9-19":"1","2026-1-9-20":"1","2026-1-9-21":"1","2026-1-9-22":"1","2026-1-9-23":"R","2026-1-9-24":"R","2026-1-9-25":"1","2026-1-9-26":"1","2026-1-9-27":"1","2026-1-9-28":"1","2026-1-11-1":"1","2026-1-11-2":"R","2026-1-11-3":"R","2026-1-11-4":"1","2026-1-11-5":"1","2026-1-11-6":"1","2026-1-11-7":"1","2026-1-11-8":"1","2026-1-11-9":"R","2026-1-11-10":"R","2026-1-11-11":"7","2026-1-11-12":"1","2026-1-11-13":"1","2026-1-11-14":"1","2026-1-11-15":"1","2026-1-11-16":"R","2026-1-11-17":"R","2026-1-11-18":"1","2026-1-11-19":"1","2026-1-11-20":"1","2026-1-11-21":"1","2026-1-11-22":"1","2026-1-11-23":"R","2026-1-11-24":"R","2026-1-11-25":"1","2026-1-11-26":"1","2026-1-11-27":"1","2026-1-11-28":"1","2026-1-17-1":"1","2026-1-17-2":"R","2026-1-17-3":"R","2026-1-17-4":"M","2026-1-17-5":"M","2026-1-17-6":"M","2026-1-17-7":"M","2026-1-17-8":"M","2026-1-17-9":"R","2026-1-17-10":"R","2026-1-13-1":"1","2026-1-13-2":"R","2026-1-13-3":"R","2026-1-13-4":"1","2026-1-13-5":"1","2026-1-13-6":"5","2026-1-13-7":"1","2026-1-13-8":"M","2026-1-13-9":"R","2026-1-13-10":"R","2026-1-13-11":"F","2026-1-13-12":"1","2026-1-13-13":"1","2026-1-13-14":"1","2026-1-13-15":"1","2026-1-13-16":"R","2026-1-13-17":"R","2026-1-13-18":"1","2026-1-13-19":"1","2026-1-13-20":"1","2026-1-13-21":"1","2026-1-13-22":"1","2026-1-13-23":"R","2026-1-13-24":"R","2026-1-13-25":"1","2026-1-13-26":"1","2026-1-13-27":"1","2026-1-13-28":"1","2026-1-14-1":"6","2026-1-14-2":"R","2026-1-14-3":"R","2026-1-14-4":"1","2026-1-14-5":"1","2026-1-14-6":"1","2026-1-14-7":"1","2026-1-14-8":"1","2026-1-14-9":"R","2026-1-14-10":"R","2026-1-14-11":"7","2026-1-14-12":"1","2026-1-14-13":"1","2026-1-14-14":"1","2026-1-14-15":"1","2026-1-14-16":"R","2026-1-14-17":"R","2026-1-14-18":"1","2026-1-14-19":"1","2026-1-14-20":"1","2026-1-14-21":"5","2026-1-14-22":"7","2026-1-14-23":"R","2026-1-14-24":"R","2026-1-14-25":"1","2026-1-14-26":"1","2026-1-14-27":"1","2026-1-14-28":"1"};
+var DRAG  = 'data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20200%20240%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M100%2080%20C80%2060%2020%2050%2015%2070%20C10%2088%2050%2090%20100%2080Z%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.8%22%20fill%3D%22none%22%20opacity%3D%220.85%22%2F%3E%3Cpath%20d%3D%22M100%2080%20C120%2060%20180%2050%20185%2070%20C190%2088%20150%2090%20100%2080Z%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.8%22%20fill%3D%22none%22%20opacity%3D%220.85%22%2F%3E%3Cpath%20d%3D%22M100%2095%20C78%2080%2022%2078%2018%2096%20C14%20112%2055%20108%20100%2095Z%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.8%22%20fill%3D%22none%22%20opacity%3D%220.8%22%2F%3E%3Cpath%20d%3D%22M100%2095%20C122%2080%20178%2078%20182%2096%20C186%20112%20145%20108%20100%2095Z%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.8%22%20fill%3D%22none%22%20opacity%3D%220.8%22%2F%3E%3Cellipse%20cx%3D%22100%22%20cy%3D%2268%22%20rx%3D%227%22%20ry%3D%226%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.9%22%20fill%3D%22none%22%2F%3E%3Ccircle%20cx%3D%2295%22%20cy%3D%2266%22%20r%3D%223.5%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.8%22%20fill%3D%22none%22%2F%3E%3Ccircle%20cx%3D%22105%22%20cy%3D%2266%22%20r%3D%223.5%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.8%22%20fill%3D%22none%22%2F%3E%3Cpath%20d%3D%22M97%2063%20C94%2057%2090%2052%2086%2048%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M103%2063%20C106%2057%20110%2052%20114%2048%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M96%2074%20C93%2076%2091%2080%2091%2086%20C91%2092%2093%2095%2096%2096%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.9%22%20fill%3D%22none%22%2F%3E%3Cpath%20d%3D%22M104%2074%20C107%2076%20109%2080%20109%2086%20C109%2092%20107%2095%20104%2096%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.9%22%20fill%3D%22none%22%2F%3E%3Cpath%20d%3D%22M96%2096%20L97%20210%20Q100%20215%20103%20210%20L104%2096%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.8%22%20fill%3D%22none%22%2F%3E%3Cpath%20d%3D%22M97%20115%20Q100%20113%20103%20115%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.5%22%20opacity%3D%220.6%22%2F%3E%3Cpath%20d%3D%22M97%20135%20Q100%20133%20103%20135%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.5%22%20opacity%3D%220.5%22%2F%3E%3Cpath%20d%3D%22M97.5%20155%20Q100%20153%20102.5%20155%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.5%22%20opacity%3D%220.4%22%2F%3E%3Cpath%20d%3D%22M98%20175%20Q100%20173%20102%20175%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.5%22%20opacity%3D%220.35%22%2F%3E%3Cpath%20d%3D%22M94%2078%20C87%2083%2078%2089%2070%2093%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M94%2084%20C86%2087%2077%2091%2068%2099%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M106%2078%20C113%2083%20122%2089%20130%2093%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3Cpath%20d%3D%22M106%2084%20C114%2087%20123%2091%20132%2099%22%20stroke%3D%22currentColor%22%20stroke-width%3D%220.7%22%20stroke-linecap%3D%22round%22%2F%3E%3C%2Fsvg%3E';
+
+// ── CONSTANTS ──────────────────────────────────────────────────────────────────
+var MONTHS=['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+var MS=['Gen','Feb','Mar','Apr','Mag','Giu','Lug','Ago','Set','Ott','Nov','Dic'];
+var DAYS=['Dom','Lun','Mar','Mer','Gio','Ven','Sab'];
+var CODES=[
+  {c:'1',  l:'Presenza',  bg:'#647A4E',fg:'#ECF0E8'},
+  {c:'R',  l:'Riposo',    bg:'#221510',fg:'#6A5040'},
+  {c:'RR', l:'Rip.x2',   bg:'#32190E',fg:'#3A2015'},
+  {c:'F',  l:'Ferie',     bg:'#4E6B7A',fg:'#E8EEF0'},
+  {c:'B',  l:'Trasferta', bg:'#A86B35',fg:'#F0EBE3'},
+  {c:'M',  l:'Malattia',  bg:'#9A3520',fg:'#F0E8E6'},
+  {c:'P',  l:'Permesso',  bg:'#6E5078',fg:'#EDE8F0'},
+  {c:'C',  l:'Congedo',   bg:'#884858',fg:'#F0E8EA'},
+  {c:'OFF',l:'OFF',       bg:'#090605',fg:'#32190E'}
+];
+var TSHIFT=[
+  {c:'MATTINA', bg:'#3A5870',fg:'#D0E4F0'},
+  {c:'SERA',    bg:'#7A4E28',fg:'#F4EBE0'},
+  {c:'4 ORE',   bg:'#4A5E30',fg:'#DCF0D0'},
+  {c:'FERIE',   bg:'#2A4A5A',fg:'#C0D8E8'},
+  {c:'MIA',     bg:'#321510',fg:'#6A5040'},
+  {c:'RECUPERO',bg:'#4A3060',fg:'#D8C8F0'},
+  {c:'RIPOSO',  bg:'#221510',fg:'#6A5040'},
+  {c:'OFF',     bg:'#090605',fg:'#32190E'}
+];
+var FC_CATS = ['Antipasti','Primi','Secondi','Contorni','Dessert','Fuori menu'];
+var FC_UNITS = ['g','ml','cl','pz','kg','l'];
+var FC_IVA = 0.10;
+var SEC_LABEL = {c:'Cucina',s:'Sala',b:'Bar',a:'Altro'};
+var SEC_COLOR = {c:'#C07060',s:'#6090B0',b:'#88A860',a:'#9080B0'};
+var SEZIONI = ['c','s','b','a'];
+var EK='bg:v9:e', DK='bg:v9:d', TK='bg:v9:t', SK='bg:v9:sec', FCK='bg:v9:fc';
+
+// ── STATE ──────────────────────────────────────────────────────────────────────
+var emp=[], data={}, turni={}, sections={};
+var dishes={};   // id -> {name,cat,menuPrice,ingredients:[{name,qty,unit,unitPrice}]}
+var fcEditId=null;
+var yr=new Date().getFullYear(), mo=new Date().getMonth(), aYr=new Date().getFullYear();
+var curView='Cal', eEmp=null, eDay=null, rmE=null, tEmp=null, tDate=null;
+var xlsxLoaded=false, filterSec='t';
+var tWeekStart=null;
+
+// ── HELPERS ────────────────────────────────────────────────────────────────────
+function dim(y,m){ return new Date(y,m+1,0).getDate(); }
+function dname(y,m,d){ return DAYS[new Date(y,m,d).getDay()]; }
+function isWE(y,m,d){ var w=new Date(y,m,d).getDay(); return w===0||w===6; }
+function dkey(e,d){ return yr+'-'+mo+'-'+e+'-'+d; }
+function gv(e,d){ return data[dkey(e,d)]||''; }
+function cstyle(v){
+  if(!v) return {bg:'transparent',fg:'#3A2015'};
+  if(!isNaN(parseFloat(v))) return {bg:'#647A4E',fg:'#ECF0E8'};
+  var c=CODES.find(function(x){return x.c===v;});
+  return c?{bg:c.bg,fg:c.fg}:{bg:'#1A0F0A',fg:'#6A5040'};
+}
+function calcS(e,y,m){
+  var days=dim(y,m),ore=0,r=0,f=0,b=0,mal=0,p=0,c=0;
+  for(var d=1;d<=days;d++){
+    var v=data[y+'-'+m+'-'+e+'-'+d]||'';
+    if(!v||v==='RR') continue;
+    var n=parseFloat(v);
+    if(!isNaN(n)) ore+=(n===1?8:n);
+    else if(v==='R') r++;
+    else if(v==='F') f+=8;
+    else if(v==='B') b++;
+    else if(v==='M') mal+=8;
+    else if(v==='P') p+=8;
+    else if(v==='C') c++;
+  }
+  return {ore:ore,r:r,f:f,b:b,mal:mal,p:p,c:c};
+}
+function calcA(e,y){
+  var t={ore:0,f:0,b:0,mal:0};
+  for(var m=0;m<12;m++){var s=calcS(e,y,m);t.ore+=s.ore;t.f+=s.f;t.b+=s.b;t.mal+=s.mal;}
+  return t;
+}
+function escQ(e){ return e.replace(/\\/g,'\\\\').replace(/'/g,'\\\''); }
+function filteredEmp(){
+  var q=(document.getElementById('srch')?document.getElementById('srch').value||'':'').toLowerCase();
+  return emp.filter(function(e){
+    return (!q||e.toLowerCase().indexOf(q)>=0)&&(filterSec==='t'||(sections[e]||'a')===filterSec);
+  });
+}
+
+// ── PERSIST ────────────────────────────────────────────────────────────────────
+function save(){
+  try{
+    localStorage.setItem(EK,JSON.stringify(emp));
+    localStorage.setItem(DK,JSON.stringify(data));
+    localStorage.setItem(TK,JSON.stringify(turni));
+    localStorage.setItem(SK,JSON.stringify(sections));
+    localStorage.setItem(FCK,JSON.stringify(dishes));
+  }catch(e){}
+}
+function genId(){ return 'fc'+Date.now().toString(36)+Math.random().toString(36).slice(2,5); }
+
+// ── TOAST ──────────────────────────────────────────────────────────────────────
+var tTimer;
+function showToast(msg){
+  var t=document.getElementById('tst');
+  t.textContent='◈  '+msg; t.style.display='block';
+  clearTimeout(tTimer); tTimer=setTimeout(function(){t.style.display='none';},2500);
+}
+
+// ── VIEW SWITCH ────────────────────────────────────────────────────────────────
+function sv(v){
+  curView=v;
+  var btns=document.querySelectorAll('nav button');
+  ['Cal','Stats','Ann','Turni','FC','Team'].forEach(function(id,i){btns[i].classList.toggle('on',id===v);});
+  document.getElementById('sub').style.display=(v==='Cal'||v==='Stats')?'block':'none';
+  ['Cal','Stats','Ann','Turni','FC','Team'].forEach(function(id){
+    document.getElementById('v'+id).style.display=id===v?'block':'none';
+  });
+  if(v==='Cal') rCal();
+  else if(v==='Stats') rStats();
+  else if(v==='Ann') rAnn();
+  else if(v==='Turni') rTurni();
+  else if(v==='FC') rFC();
+  else if(v==='Team') rTeam();
+}
+
+// ── MONTH NAV ──────────────────────────────────────────────────────────────────
+function updM(){ document.getElementById('mlbl').textContent=MONTHS[mo]+'  '+yr; }
+function pm(){ mo--; if(mo<0){mo=11;yr--;} updM(); if(curView==='Cal') rCal(); else rStats(); }
+function nm(){ mo++; if(mo>11){mo=0;yr++;} updM(); if(curView==='Cal') rCal(); else rStats(); }
+
+// ── SECTION FILTER ─────────────────────────────────────────────────────────────
+function setSF(s){
+  filterSec=s;
+  document.querySelectorAll('.fbar .fbtn').forEach(function(b,i){b.classList.toggle('on',['t','c','s','b','a'][i]===s);});
+  if(curView==='Cal') rCal(); else rStats();
+}
+
+// ── LEGEND ─────────────────────────────────────────────────────────────────────
+function renderLegend(){
+  var h='';
+  CODES.forEach(function(c){h+='<div class="li"><div class="ld" style="background:'+c.bg+';color:'+c.fg+'">'+c.c+'</div><span class="ll">'+c.l+'</span></div>';});
+  document.getElementById('leg').innerHTML=h;
+}
+
+// ── CALENDAR ───────────────────────────────────────────────────────────────────
+function rCal(){
+  updM();
+  var fe=filteredEmp();
+  var days=dim(yr,mo);
+  var h='<thead><tr><th class="thn">Dipendente</th>';
+  for(var d=1;d<=days;d++){
+    var we=isWE(yr,mo,d);
+    h+='<th class="thd" style="background:'+(we?'#0E0705':'#120A07')+'">'
+      +'<div style="font-size:9px;color:'+(we?'#3A2015':'#C4B09A')+'">'+d+'</div>'
+      +'<div style="font-size:6px;color:'+(we?'#3A2015':'#6A5040')+'">'+dname(yr,mo,d)+'</div></th>';
+  }
+  h+='<th class="tht" style="color:#C98A4A">h</th><th class="tht" style="color:#6A5040">R</th>'
+    +'<th class="tht" style="color:#4E6B7A">F</th><th class="tht" style="color:#A86B35">B</th>'
+    +'<th class="tht" style="color:#9A3520">M</th></tr></thead><tbody>';
+  if(!fe.length){
+    h+='<tr><td colspan="'+(days+6)+'" style="text-align:center;padding:28px;color:#6A5040;font-size:9px;letter-spacing:3px;">NESSUN RISULTATO</td></tr>';
+  } else {
+    fe.forEach(function(e,ei){
+      var rb=ei%2===0?'#1A0F0A':'#120A07';
+      var s=calcS(e,yr,mo);
+      var eq=escQ(e);
+      var sec=sections[e]||'a';
+      var dot='<span class="sec-dot" style="background:'+SEC_COLOR[sec]+'"></span>';
+      h+='<tr><td class="tdn" style="background:'+rb+'">'+dot+e+'</td>';
+      for(var d=1;d<=days;d++){
+        var v=gv(e,d); var cs=cstyle(v); var we=isWE(yr,mo,d);
+        h+='<td class="tdc" style="background:'+(we?'rgba(0,0,0,.2)':rb)+'" onclick="oMod(\''+eq+'\','+d+')">'
+          +'<div class="ci" style="background:'+cs.bg+';color:'+cs.fg+';opacity:'+(v?1:.06)+'">'+( v||'&#183;')+'</div></td>';
+      }
+      h+='<td class="tds" style="color:#C98A4A;text-align:right;font-size:12px;">'+s.ore+'</td>'
+        +'<td class="tds" style="color:#6A5040;text-align:center;">'+(s.r||'&#8212;')+'</td>'
+        +'<td class="tds" style="color:#4E6B7A;text-align:center;">'+(s.f?s.f+'h':'&#8212;')+'</td>'
+        +'<td class="tds" style="color:#A86B35;text-align:center;">'+(s.b||'&#8212;')+'</td>'
+        +'<td class="tds" style="color:#9A3520;text-align:center;">'+(s.mal?s.mal+'h':'&#8212;')+'</td></tr>';
+    });
+  }
+  h+='</tbody>';
+  document.getElementById('ct').innerHTML=h;
+}
+
+// ── STATS ──────────────────────────────────────────────────────────────────────
+function rStats(){
+  updM();
+  var fe=filteredEmp();
+  var aS=fe.map(function(e){var s=calcS(e,yr,mo);s.short=e.split(' ').pop();return s;});
+  var maxO=Math.max.apply(null,aS.map(function(x){return x.ore;}).concat([1]));
+  var bc='<div class="scard"><div class="slbl">Ore &#183; '+MONTHS[mo]+'</div><div class="bc">';
+  aS.forEach(function(x){
+    bc+='<div class="bw"><div style="flex:1;display:flex;align-items:flex-end;width:100%;justify-content:center;">'
+      +'<div class="bar" style="height:'+Math.max(2,x.ore/maxO*100)+'%;"></div></div>'
+      +'<div class="bv">'+x.ore+'</div><div class="bl">'+x.short+'</div></div>';
+  });
+  bc+='</div></div>';
+  var tbl='<div class="scard" style="overflow-x:auto;"><div class="slbl">Riepilogo &#183; '+MONTHS[mo]+' '+yr+'</div>'
+    +'<table class="ct2"><thead><tr>';
+  ['Dipendente','h','R','F','B','M','P','C'].forEach(function(hh){tbl+='<th>'+hh+'</th>';});
+  tbl+='</tr></thead><tbody>';
+  fe.forEach(function(e,i){
+    var s=calcS(e,yr,mo);
+    tbl+='<tr style="background:'+(i%2===0?'#1A0F0A':'transparent')+'">'
+      +'<td style="color:#C4B09A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">'+e+'</td>'
+      +'<td style="color:#C98A4A;font-size:13px;font-weight:300;">'+s.ore+'h</td>'
+      +'<td style="color:#6A5040">'+(s.r||'&#8212;')+'</td>'
+      +'<td style="color:#4E6B7A">'+(s.f?s.f+'h':'&#8212;')+'</td>'
+      +'<td style="color:#A86B35">'+(s.b||'&#8212;')+'</td>'
+      +'<td style="color:#9A3520">'+(s.mal?s.mal+'h':'&#8212;')+'</td>'
+      +'<td style="color:#6E5078">'+(s.p?s.p+'h':'&#8212;')+'</td>'
+      +'<td style="color:#884858">'+(s.c||'&#8212;')+'</td></tr>';
+  });
+  tbl+='</tbody></table></div>';
+  document.getElementById('vStats').innerHTML=bc+tbl;
+}
+
+// ── ANNUAL ─────────────────────────────────────────────────────────────────────
+function rAnn(){
+  var el=document.getElementById('vAnn');
+  el.innerHTML='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">'
+    +'<button class="mb" onclick="aYr--;rAnn()">&#8249;</button>'
+    +'<div style="font-weight:100;font-size:20px;letter-spacing:6px;flex:1;text-align:center;">'+aYr+'</div>'
+    +'<button class="mb" onclick="aYr++;rAnn()">&#8250;</button>'
+    +'<button class="xb" onclick="expAnn()">&#8595; XLS Anno</button>'
+    +'</div><div class="kg" id="kg"></div><div class="scard" id="abar"></div>'
+    +'<div class="scard" style="overflow-x:auto;"><div class="slbl">Ore per Mese &#183; '+aYr+'</div>'
+    +'<table class="at" id="atr"></table></div>';
+  var tots=emp.map(function(e){var a=calcA(e,aYr);return{e:e,short:e.split(' ').pop(),ore:a.ore,f:a.f,b:a.b,mal:a.mal};});
+  var tOre=tots.reduce(function(a,t){return a+t.ore;},0);
+  var kpis=[
+    {l:'Ore Totali',v:tOre+'h',col:'#C98A4A'},
+    {l:'Ferie',v:Math.round(tots.reduce(function(a,t){return a+t.f;},0)/8)+'gg',col:'#4E6B7A'},
+    {l:'Trasferte',v:tots.reduce(function(a,t){return a+t.b;},0)+'gg',col:'#A86B35'},
+    {l:'Malattia',v:Math.round(tots.reduce(function(a,t){return a+t.mal;},0)/8)+'gg',col:'#9A3520'}
+  ];
+  var kg='';
+  kpis.forEach(function(k){kg+='<div class="kc"><div class="kl">'+k.l+'</div><div class="kv" style="color:'+k.col+'">'+k.v+'</div></div>';});
+  document.getElementById('kg').innerHTML=kg;
+  var mx=Math.max.apply(null,tots.map(function(t){return t.ore;}).concat([1]));
+  var ab='<div class="slbl">Ore per Dipendente &#183; '+aYr+'</div><div class="bc">';
+  tots.forEach(function(t){
+    ab+='<div class="bw"><div style="flex:1;display:flex;align-items:flex-end;width:100%;justify-content:center;">'
+      +'<div class="bar" style="height:'+Math.max(2,t.ore/mx*100)+'%;"></div></div>'
+      +'<div class="bv">'+t.ore+'</div><div class="bl">'+t.short+'</div></div>';
+  });
+  ab+='</div>';
+  document.getElementById('abar').innerHTML=ab;
+  var th='<thead><tr><th>Dipendente</th>';
+  MS.forEach(function(m){th+='<th>'+m+'</th>';});
+  th+='<th>TOT</th></tr></thead><tbody>';
+  var tb='';
+  tots.forEach(function(t,i){
+    tb+='<tr style="background:'+(i%2===0?'#1A0F0A':'transparent')+'"><td>'+t.e+'</td>';
+    MS.forEach(function(_,mi){var o=calcS(t.e,aYr,mi).ore;tb+='<td style="color:'+(o>0?'#C98A4A':'#3A2015')+';">'+(o||'&#8212;')+'</td>';});
+    tb+='<td style="color:#EEE6DC;font-size:12px;">'+t.ore+'h</td></tr>';
+  });
+  tb+='<tr class="ft"><td>TOTALE</td>';
+  MS.forEach(function(_,mi){var s=emp.reduce(function(a,e){return a+calcS(e,aYr,mi).ore;},0);tb+='<td>'+(s||'&#8212;')+'</td>';});
+  tb+='<td style="color:#C98A4A;font-size:13px;">'+tOre+'h</td></tr></tbody>';
+  document.getElementById('atr').innerHTML=th+tb;
+}
+
+// ── TURNI ──────────────────────────────────────────────────────────────────────
+function getMonday(d){var day=d.getDay();var diff=d.getDate()-day+(day===0?-6:1);return new Date(d.getFullYear(),d.getMonth(),diff);}
+function addDays(d,n){var r=new Date(d);r.setDate(r.getDate()+n);return r;}
+function fmtDate(d){return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();}
+function tkv(e,ds){return turni[ds+'-'+e]||'';}
+function tshiftStyle(v){
+  if(!v) return {bg:'transparent',fg:'#3A2015'};
+  var s=TSHIFT.find(function(x){return x.c===v.toUpperCase();});
+  return s?{bg:s.bg,fg:s.fg}:{bg:'#2A1A0A',fg:'#C98A4A'};
+}
+function rTurni(){
+  if(!tWeekStart) tWeekStart=getMonday(new Date());
+  var days=[];
+  for(var i=0;i<7;i++) days.push(addDays(tWeekStart,i));
+  var wlbl=DAYS[days[0].getDay()]+' '+days[0].getDate()+' — '+DAYS[days[6].getDay()]+' '+days[6].getDate()+' '+days[0].toLocaleString('it-IT',{month:'long',year:'numeric'});
+  var h='<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">'
+    +'<button class="mb" onclick="tWeekStart=addDays(tWeekStart,-7);rTurni()">&#8249;</button>'
+    +'<div style="font-weight:200;font-size:11px;letter-spacing:3px;text-transform:uppercase;flex:1;text-align:center;color:#EEE6DC;">'+wlbl+'</div>'
+    +'<button class="mb" onclick="tWeekStart=addDays(tWeekStart,7);rTurni()">&#8250;</button>'
+    +'<button class="mb" onclick="tWeekStart=getMonday(new Date());rTurni()" style="font-size:8px;width:auto;padding:0 8px;">OGGI</button>'
+    +'</div>';
+  h+='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px;">';
+  TSHIFT.forEach(function(s){h+='<div style="background:'+s.bg+';color:'+s.fg+';padding:2px 7px;font-size:7px;letter-spacing:1.5px;border-radius:2px;">'+s.c+'</div>';});
+  h+='</div><div class="tw"><table class="tct"><thead><tr><th style="position:sticky;left:0;z-index:3;background:#120A07;">Dipendente</th>';
+  var today=fmtDate(new Date());
+  days.forEach(function(d){
+    var ds=fmtDate(d);var dn=d.getDay();var we=dn===0||dn===6;var isT=ds===today;
+    h+='<th class="dh'+(we?' we':'')+'" style="'+(isT?'border-bottom:1px solid #C98A4A;':'')+'">'
+      +'<div style="color:'+(isT?'#C98A4A':(we?'#3A2015':'#6A5040'))+'">'+DAYS[dn]+'</div>'
+      +'<div style="font-size:10px;color:'+(isT?'#EEE6DC':'#C4B09A')+'">'+d.getDate()+'</div></th>';
+  });
+  h+='</tr></thead><tbody>';
+  emp.forEach(function(e,ei){
+    var rb=ei%2===0?'#1A0F0A':'#120A07';
+    var eq=escQ(e);
+    h+='<tr><td style="background:'+rb+'">'+e+'</td>';
+    days.forEach(function(d){
+      var ds=fmtDate(d);var v=tkv(e,ds);var st=tshiftStyle(v);var dn=d.getDay();var we=dn===0||dn===6;
+      var dm=d.getDate()+'/'+(d.getMonth()+1);
+      h+='<td class="tcell" style="background:'+(we?'rgba(0,0,0,.15)':rb)+'" onclick="oTMod(\''+eq+'\',\''+ds+'\',\''+dm+'\')">'
+        +(v?'<div class="tpill" style="background:'+st.bg+';color:'+st.fg+'">'+v+'</div>'
+          :'<div style="color:#3A2015;font-size:14px;">&#183;</div>')+'</td>';
+    });
+    h+='</tr>';
+  });
+  h+='</tbody></table></div>';
+  document.getElementById('vTurni').innerHTML=h;
+}
+function oTMod(e,ds,dm){
+  tEmp=e; tDate=ds;
+  document.getElementById('tmemp').textContent=e;
+  document.getElementById('tmdat').textContent=dm;
+  var cur=tkv(e,ds);
+  var btns='';
+  TSHIFT.forEach(function(s){
+    var active=cur.toUpperCase()===s.c;
+    btns+='<button onclick="setTurno(\''+s.c+'\')" style="background:'+(active?s.bg:'#1A0F0A')+';color:'+(active?s.fg:'#6A5040')+';border:1px solid '+(active?s.bg:'#32190E')+';padding:9px 4px;font-family:inherit;font-size:8px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;border-radius:2px;">'+s.c+'</button>';
+  });
+  document.getElementById('tshift-btns').innerHTML=btns;
+  document.getElementById('tcustom').value=(!TSHIFT.find(function(s){return s.c===cur.toUpperCase();})&&cur)?cur:'';
+  document.getElementById('tmod').style.display='flex';
+}
+function cTMo(){document.getElementById('tmod').style.display='none';tEmp=null;tDate=null;}
+function setTurno(v){if(!tEmp||!tDate)return;v=(v||'').trim().toUpperCase();if(!v)return;turni[tDate+'-'+tEmp]=v;save();cTMo();rTurni();showToast(v+' assegnato');}
+function clTurno(){if(!tEmp||!tDate)return;delete turni[tDate+'-'+tEmp];save();cTMo();rTurni();}
+
+// ── FOOD COST ──────────────────────────────────────────────────────────────────
+function fcIngCost(ing){
+  var qty=parseFloat(ing.qty)||0;
+  var up=parseFloat(ing.unitPrice)||0;
+  if(ing.unit==='g')  return qty/1000*up;
+  if(ing.unit==='ml') return qty/1000*up;
+  if(ing.unit==='cl') return qty/100*up;
+  if(ing.unit==='kg') return qty*up;
+  if(ing.unit==='l')  return qty*up;
+  return qty*up; // pz
+}
+function fcDishCost(dish){
+  return (dish.ingredients||[]).reduce(function(a,ing){return a+fcIngCost(ing);},0);
+}
+function fcColor(pct){
+  if(pct<=25) return '#7A9A5A';
+  if(pct<=33) return '#C98A4A';
+  return '#9A3520';
+}
+
+function rFC(){
+  var el=document.getElementById('vFC');
+  var ids=Object.keys(dishes);
+  var h='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">'
+    +'<div style="font-weight:100;font-size:20px;letter-spacing:4px;">Food Cost</div>'
+    +'<button onclick="oFCNew()" style="background:#EEE6DC;color:#090605;border:none;padding:8px 16px;font-family:inherit;font-size:8px;letter-spacing:3px;text-transform:uppercase;">+ NUOVO PIATTO</button>'
+    +'</div>';
+
+  if(!ids.length){
+    h+='<div style="text-align:center;padding:60px 20px;color:#6A5040;font-size:9px;letter-spacing:3px;">'
+      +'NESSUN PIATTO INSERITO<br><br>'
+      +'<span style="font-size:8px;color:#3A2015;">Clicca + NUOVO PIATTO per iniziare</span></div>';
+  } else {
+    FC_CATS.forEach(function(cat){
+      var catDishes=ids.filter(function(id){return dishes[id].cat===cat;});
+      if(!catDishes.length) return;
+      h+='<div style="margin-bottom:6px;font-size:7px;letter-spacing:3px;text-transform:uppercase;color:#6A5040;padding:4px 0;border-bottom:1px solid #200F08;">'+cat+'</div>'
+        +'<div class="fc-grid" style="margin-bottom:20px;">';
+      catDishes.forEach(function(id){
+        var d=dishes[id];
+        var cost=fcDishCost(d);
+        var menuNet=(parseFloat(d.menuPrice)||0)/(1+FC_IVA);
+        var fcPct=menuNet>0?Math.round(cost/menuNet*100):0;
+        var margin=menuNet-cost;
+        var col=fcColor(fcPct);
+        h+='<div class="fc-card" data-fcid="'+id+'" onclick="oFCEdit(this.dataset.fcid)">'
+        h+='<div class="fc-card-name">'+d.name+'</div>'
+          +'<div class="fc-card-cat" style="color:#6A5040;">'+cat+'</div>'
+          +'<div class="fc-meters">'
+          +'<div class="fc-meter"><div class="fc-meter-lbl">Costo</div><div class="fc-meter-val" style="color:#C98A4A;">&#8364;'+cost.toFixed(2)+'</div></div>'
+          +'<div class="fc-meter"><div class="fc-meter-lbl">Prezzo</div><div class="fc-meter-val" style="color:#EEE6DC;">&#8364;'+(parseFloat(d.menuPrice)||0).toFixed(2)+'</div></div>'
+          +'<div class="fc-meter"><div class="fc-meter-lbl">FC%</div><div class="fc-meter-val" style="color:'+col+';">'+fcPct+'%</div></div>'
+          +'</div>'
+          +'<div class="fc-pct-bar"><div class="fc-pct-fill" style="width:'+Math.min(100,fcPct)+'%;background:'+col+';"></div></div>'
+          +'<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:8px;">'
+          +'<span style="color:#6A5040;">Margine netto IVA</span>'
+          +'<span style="color:'+(margin>=0?'#7A9A5A':'#9A3520')+';">&#8364;'+margin.toFixed(2)+'</span>'
+          +'</div>'
+          +'</div>';
+      });
+      h+='</div>';
+    });
+    // Summary
+    var allCosts=ids.map(function(id){return fcDishCost(dishes[id]);});
+    var avgFC=ids.length?Math.round(ids.reduce(function(a,id){var d=dishes[id];var cost=fcDishCost(d);var net=(parseFloat(d.menuPrice)||0)/(1+FC_IVA);return a+(net>0?cost/net*100:0);},0)/ids.length):0;
+    h+='<div class="scard" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">'
+      +'<div><div class="kl">Piatti</div><div class="kv" style="font-size:18px;color:#EEE6DC;">'+ids.length+'</div></div>'
+      +'<div><div class="kl">FC% medio</div><div class="kv" style="font-size:18px;color:'+fcColor(avgFC)+';">'+avgFC+'%</div></div>'
+      +'<div><div class="kl">Soglia ideale</div><div class="kv" style="font-size:18px;color:#7A9A5A;">&lt;28%</div></div>'
+      +'</div>';
+  }
+  el.innerHTML=h;
+}
+
+function oFCNew(){
+  fcEditId=null;
+  renderFCModal({name:'',cat:'Antipasti',menuPrice:'',ingredients:[]});
+}
+function oFCEdit(id){
+  fcEditId=id;
+  renderFCModal(JSON.parse(JSON.stringify(dishes[id])));
+}
+function cFCMo(evt){
+  if(evt&&evt.target!==document.getElementById('fcmod')) return;
+  document.getElementById('fcmod').style.display='none';
+}
+function closeFCModal(){document.getElementById('fcmod').style.display='none';}
+
+function renderFCModal(draft){
+  var cost=fcDishCost(draft);
+  var menuNet=(parseFloat(draft.menuPrice)||0)/(1+FC_IVA);
+  var fcPct=menuNet>0?Math.round(cost/menuNet*100):0;
+  var margin=menuNet-cost;
+
+  var catOpts=FC_CATS.map(function(c){return '<option value="'+c+'"'+(c===draft.cat?' selected':'')+'>'+c+'</option>';}).join('');
+
+  var ingRows='';
+  (draft.ingredients||[]).forEach(function(ing,idx){
+    var unitOpts=FC_UNITS.map(function(u){return '<option value="'+u+'"'+(u===ing.unit?' selected':'')+'>'+u+'</option>';}).join('');
+    var iCost=fcIngCost(ing);
+    ingRows+='<div class="fc-ing-row">'
+      +'<button class="fc-del" onclick="fcDelIng('+idx+')">&#10005;</button>'
+      +'<input class="fc-inp-sm" style="flex:2;min-width:80px;" type="text" value="'+ing.name+'" placeholder="Ingrediente" oninput="fcUpdIng('+idx+',\'name\',this.value)"/>'
+      +'<input class="fc-inp-sm" style="width:54px;" type="number" min="0" value="'+ing.qty+'" placeholder="Qtà" oninput="fcUpdIng('+idx+',\'qty\',this.value)"/>'
+      +'<select class="fc-inp-sm" style="width:46px;" onchange="fcUpdIng('+idx+',\'unit\',this.value)">'+unitOpts+'</select>'
+      +'<span style="font-size:7px;color:#6A5040;white-space:nowrap;">&#8364;/'+fcUnitLabel(ing.unit)+'</span>'
+      +'<input class="fc-inp-sm" style="width:62px;" type="number" min="0" step="0.01" value="'+ing.unitPrice+'" placeholder="Prezzo" oninput="fcUpdIng('+idx+',\'unitPrice\',this.value)"/>'
+      +'<span class="fc-ing-cost">&#8364;'+iCost.toFixed(3)+'</span>'
+      +'</div>';
+  });
+
+  var col=fcColor(fcPct);
+  var body='<div style="font-weight:100;font-size:18px;letter-spacing:3px;color:#EEE6DC;margin-bottom:14px;">'+(fcEditId?draft.name:'NUOVO PIATTO')+'</div>'
+    +'<span class="fc-label">Nome piatto</span>'
+    +'<input class="fc-inp" type="text" id="fc-name" value="'+draft.name+'" placeholder="es. Cacio e Pepe" oninput="fcLiveUpdate()"/>'
+    +'<span class="fc-label">Categoria</span>'
+    +'<select class="fc-inp" id="fc-cat" onchange="fcLiveUpdate()">'+catOpts+'</select>'
+    +'<span class="fc-label">Prezzo menu (IVA inclusa 10%)</span>'
+    +'<input class="fc-inp" type="number" min="0" step="0.5" id="fc-price" value="'+draft.menuPrice+'" placeholder="es. 14.00" oninput="fcLiveUpdate()"/>'
+    +'<div class="hl" style="margin-top:14px;"></div>'
+    +'<div style="font-size:7px;letter-spacing:3px;text-transform:uppercase;color:#6A5040;margin-bottom:8px;">Ingredienti per porzione</div>'
+    +'<div id="fc-ing-list">'+ingRows+'</div>'
+    +'<button class="fc-add-btn" onclick="fcAddIng()">+ Aggiungi ingrediente</button>'
+    +'<div class="hl" style="margin-top:14px;"></div>'
+    +'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">'
+    +'<div class="fc-meter"><div class="fc-meter-lbl">Costo piatto</div><div class="fc-meter-val" id="fc-r-cost" style="color:#C98A4A;">&#8364;'+cost.toFixed(2)+'</div></div>'
+    +'<div class="fc-meter"><div class="fc-meter-lbl">Food cost %</div><div class="fc-meter-val" id="fc-r-pct" style="color:'+col+';">'+fcPct+'%</div></div>'
+    +'<div class="fc-meter"><div class="fc-meter-lbl">Margine</div><div class="fc-meter-val" id="fc-r-margin" style="color:'+(margin>=0?'#7A9A5A':'#9A3520')+';">&#8364;'+margin.toFixed(2)+'</div></div>'
+    +'</div>'
+    +'<div class="mf">'
+    +(fcEditId?'<button class="mc" onclick="fcDelete()">&#10005; Elimina</button>':'')
+    +'<button class="mx" onclick="closeFCModal()">Annulla</button>'
+    +'<button onclick="fcSave()" style="flex:2;background:#EEE6DC;color:#090605;border:none;padding:9px;font-family:inherit;font-size:7px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;">Salva</button>'
+    +'</div>';
+
+  document.getElementById('fcmod-body').innerHTML=body;
+  document.getElementById('fcmod').style.display='flex';
+  window._fcDraft=draft;
+}
+
+function fcUnitLabel(u){
+  if(u==='g'||u==='ml'||u==='cl') return 'kg';
+  if(u==='kg'||u==='l') return u;
+  return 'pz';
+}
+
+function fcGetDraft(){
+  var d=window._fcDraft||{ingredients:[]};
+  d.name=document.getElementById('fc-name').value.trim();
+  d.cat=document.getElementById('fc-cat').value;
+  d.menuPrice=document.getElementById('fc-price').value;
+  return d;
+}
+
+function fcLiveUpdate(){
+  var d=fcGetDraft();
+  var cost=fcDishCost(d);
+  var menuNet=(parseFloat(d.menuPrice)||0)/(1+FC_IVA);
+  var fcPct=menuNet>0?Math.round(cost/menuNet*100):0;
+  var margin=menuNet-cost;
+  var col=fcColor(fcPct);
+  var ce=document.getElementById('fc-r-cost');
+  var pe=document.getElementById('fc-r-pct');
+  var me=document.getElementById('fc-r-margin');
+  if(ce) ce.textContent='\u20ac'+cost.toFixed(2);
+  if(pe){pe.textContent=fcPct+'%';pe.style.color=col;}
+  if(me){me.textContent='\u20ac'+margin.toFixed(2);me.style.color=margin>=0?'#7A9A5A':'#9A3520';}
+}
+
+function fcUpdIng(idx,field,val){
+  if(!window._fcDraft) return;
+  window._fcDraft.ingredients[idx][field]=val;
+  var rows=document.querySelectorAll('#fc-ing-list .fc-ing-row');
+  if(rows[idx]){
+    var ing=window._fcDraft.ingredients[idx];
+    var costEl=rows[idx].querySelector('.fc-ing-cost');
+    if(costEl) costEl.textContent='\u20ac'+fcIngCost(ing).toFixed(3);
+  }
+  fcLiveUpdate();
+}
+
+function fcAddIng(){
+  if(!window._fcDraft) return;
+  window._fcDraft.ingredients.push({name:'',qty:'',unit:'g',unitPrice:''});
+  renderFCModal(window._fcDraft);
+}
+
+function fcDelIng(idx){
+  if(!window._fcDraft) return;
+  window._fcDraft.ingredients.splice(idx,1);
+  renderFCModal(window._fcDraft);
+}
+
+function fcSave(){
+  var d=fcGetDraft();
+  if(!d.name){showToast('Inserisci il nome del piatto');return;}
+  var id=fcEditId||genId();
+  dishes[id]=d;
+  save();
+  closeFCModal();
+  rFC();
+  showToast(d.name+' salvato');
+}
+
+function fcDelete(){
+  if(!fcEditId) return;
+  var name=dishes[fcEditId].name;
+  delete dishes[fcEditId];
+  save();
+  closeFCModal();
+  rFC();
+  showToast(name+' eliminato');
+}
+
+// ── TEAM ───────────────────────────────────────────────────────────────────────
+function setSec(e,sec){sections[e]=sec;save();rTeam();showToast(e.split(' ')[0]+' '+SEC_LABEL[sec]);}
+function rTeam(){
+  var cY=new Date().getFullYear();
+  var h='<div style="font-weight:100;font-size:20px;letter-spacing:4px;margin-bottom:14px;">'+emp.length+' Dipendenti</div>'
+    +'<div style="height:1px;background:#32190E;margin-bottom:14px;"></div>';
+  SEZIONI.forEach(function(sec){
+    var group=emp.filter(function(e){return (sections[e]||'a')===sec;});
+    if(!group.length) return;
+    h+='<div style="margin-bottom:18px;"><div class="sec-hdr" style="color:'+SEC_COLOR[sec]+'">'+SEC_LABEL[sec]+' &middot; '+group.length+'</div>';
+    group.forEach(function(e,i){
+      var ore=calcA(e,cY).ore;
+      var eq=escQ(e);
+      var secBtns='';
+      SEZIONI.forEach(function(s){
+        var active=s===sec;
+        secBtns+='<button class="sbtn" onclick="setSec(\''+eq+'\',\''+s+'\')" style="border-color:'+(active?SEC_COLOR[s]:'#32190E')+';color:'+(active?SEC_COLOR[s]:'#6A5040')+';">'
+          +SEC_LABEL[s]+'</button>';
+      });
+      h+='<div class="ti" style="background:'+(i%2===0?'#1A0F0A':'transparent')+'">'
+        +'<div class="tav" style="color:'+SEC_COLOR[sec]+'">'+e[0]+'</div>'
+        +'<div style="flex:1;min-width:100px;"><div class="tnm">'+e+'</div><div class="tsb">'+ore+'h quest\'anno</div></div>'
+        +'<div style="display:flex;gap:4px;flex-wrap:wrap;">'+secBtns+'</div>'
+        +'<button class="trm" onclick="askRm(\''+eq+'\')">rm</button></div>';
+    });
+    h+='</div>';
+  });
+  h+='<div class="tl"><div class="tadd">'
+    +'<input type="text" id="nemp" placeholder="COGNOME NOME..." onkeydown="if(event.key===\'Enter\')addE()"/>'
+    +'<button class="tabtn" onclick="addE()">+ ADD</button></div></div>';
+  document.getElementById('vTeam').innerHTML=h;
+}
+function addE(){var inp=document.getElementById('nemp');var n=inp.value.trim().toUpperCase();if(!n||emp.indexOf(n)>=0)return;emp.push(n);inp.value='';save();rTeam();showToast(n+' aggiunto');}
+function askRm(e){rmE=e;document.getElementById('cfnm').textContent=e;document.getElementById('cfmod').style.display='flex';}
+function cCf(){document.getElementById('cfmod').style.display='none';rmE=null;}
+function doRm(){if(!rmE)return;emp=emp.filter(function(x){return x!==rmE;});Object.keys(data).forEach(function(k){if(k.indexOf('-'+rmE+'-')>=0)delete data[k];});save();cCf();rTeam();showToast('Rimosso');}
+
+// ── CELL MODAL ─────────────────────────────────────────────────────────────────
+function oMod(e,d){
+  eEmp=e;eDay=d;
+  document.getElementById('memp').textContent=e;
+  document.getElementById('mdat').textContent=DAYS[new Date(yr,mo,d).getDay()]+', '+d+' '+MONTHS[mo]+' '+yr;
+  var cur=gv(e,d);
+  var hb='';
+  [1,2,3,4,5,6,7,8].forEach(function(n){hb+='<button class="hb'+(cur==n?' hba':'')+'" onclick="setC(\''+n+'\')">'+n+'</button>';});
+  document.getElementById('hbs').innerHTML=hb;
+  var tg='';
+  CODES.filter(function(c){return c.c!=='1';}).forEach(function(c){
+    var active=cur===c.c;
+    tg+='<button class="tb" style="'+(active?'background:'+c.bg+';color:'+c.fg+';border-color:'+c.bg:'')+'" onclick="setC(\''+c.c+'\')">'+c.c+' &middot; '+c.l+'</button>';
+  });
+  document.getElementById('tgr').innerHTML=tg;
+  document.getElementById('cmod').style.display='flex';
+}
+function cMo(){document.getElementById('cmod').style.display='none';eEmp=null;eDay=null;}
+function setC(v){if(!eEmp)return;data[dkey(eEmp,eDay)]=v.toUpperCase();save();cMo();rCal();}
+function clC(){if(!eEmp)return;delete data[dkey(eEmp,eDay)];save();cMo();rCal();}
+
+// ── EXPORT ─────────────────────────────────────────────────────────────────────
+function loadXLSX(cb){
+  if(xlsxLoaded){cb();return;}
+  var s=document.createElement('script');
+  s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  s.onload=function(){xlsxLoaded=true;cb();};
+  s.onerror=function(){alert('Errore caricamento libreria Excel.');};
+  document.head.appendChild(s);
+}
+function expM(){loadXLSX(doExpM);}
+function doExpM(){
+  var days=dim(yr,mo);
+  var hdr=['Dipendente'];
+  for(var d=1;d<=days;d++) hdr.push(d+' '+dname(yr,mo,d));
+  hdr=hdr.concat(['Ore','R','F(h)','B','M(h)','P(h)','C']);
+  var rows=emp.map(function(e){
+    var s=calcS(e,yr,mo);var row=[e];
+    for(var d=1;d<=days;d++) row.push(data[yr+'-'+mo+'-'+e+'-'+d]||'');
+    return row.concat([s.ore,s.r,s.f,s.b,s.mal,s.p,s.c]);
+  });
+  var wb=XLSX.utils.book_new();
+  var ws=XLSX.utils.aoa_to_sheet([hdr].concat(rows));
+  var cols=[{wch:22}];for(var i=0;i<days;i++)cols.push({wch:4});for(var i=0;i<7;i++)cols.push({wch:8});
+  ws['!cols']=cols;
+  XLSX.utils.book_append_sheet(wb,ws,MONTHS[mo]+' '+yr);
+  XLSX.writeFile(wb,'Balagan_'+MONTHS[mo]+'_'+yr+'.xlsx');
+  showToast('Esportato: '+MONTHS[mo]+' '+yr);
+}
+function expAnn(){loadXLSX(doExpAnn);}
+function doExpAnn(){
+  var wb=XLSX.utils.book_new();
+  for(var m=0;m<12;m++){
+    var d2=dim(aYr,m);
+    var hdr=['Dipendente'];for(var d=1;d<=d2;d++)hdr.push(String(d));
+    hdr=hdr.concat(['Ore','F(h)','B','M(h)']);
+    var rows=emp.map(function(e){
+      var s=calcS(e,aYr,m);var row=[e];
+      for(var d=1;d<=d2;d++)row.push(data[aYr+'-'+m+'-'+e+'-'+d]||'');
+      return row.concat([s.ore,s.f,s.b,s.mal]);
+    });
+    var ws=XLSX.utils.aoa_to_sheet([hdr].concat(rows));
+    var cols=[{wch:20}];for(var d=0;d<d2;d++)cols.push({wch:3});for(var d=0;d<4;d++)cols.push({wch:8});
+    ws['!cols']=cols;
+    XLSX.utils.book_append_sheet(wb,ws,MS[m]);
+  }
+  XLSX.writeFile(wb,'Balagan_Annuale_'+aYr+'.xlsx');
+  showToast('Export '+aYr+' completato');
+}
+
+// ── INIT ───────────────────────────────────────────────────────────────────────
+function init(){
+  document.getElementById('simg').src=DRAG;
+  document.getElementById('lg').src=DRAG;
+  document.getElementById('lg').style.cssText='width:19px;height:23px;filter:sepia(1) saturate(.5) brightness(.75) opacity(.8)';
+
+  var sE=null,sD=null,sT=null,sSec=null,sFC=null,_ls;
+  try{_ls=localStorage.getItem(EK);if(_ls)sE=JSON.parse(_ls);}catch(e){}
+  try{_ls=localStorage.getItem(DK);if(_ls)sD=JSON.parse(_ls);}catch(e){}
+  try{_ls=localStorage.getItem(TK);if(_ls)sT=JSON.parse(_ls);}catch(e){}
+  try{_ls=localStorage.getItem(SK);if(_ls)sSec=JSON.parse(_ls);}catch(e){}
+  try{_ls=localStorage.getItem(FCK);if(_ls)sFC=JSON.parse(_ls);}catch(e){}
+
+  emp      = sE   || EMPS;
+  turni    = sT   || {};
+  sections = sSec || {};
+  dishes   = sFC  || {};
+
+  if(sD){
+    data=sD;
+  } else {
+    var expanded={};
+    Object.keys(CDATA).forEach(function(k){
+      var parts=k.split('-');
+      var ey=parts[0],em=parts[1],idx=parseInt(parts[2]),ed=parts[3];
+      var en=EMPS[idx];
+      if(en) expanded[ey+'-'+em+'-'+en+'-'+ed]=CDATA[k];
+    });
+    data=expanded;
+  }
+
+  renderLegend();
+  sv('Cal');
+  document.getElementById('app').style.visibility='visible';
+  var sp=document.getElementById('splash');
+  sp.classList.add('done');
+  setTimeout(function(){sp.style.display='none';},350);
+}
+
+requestAnimationFrame(function(){setTimeout(init,0);});
+</script>
+</body>
+</html>
